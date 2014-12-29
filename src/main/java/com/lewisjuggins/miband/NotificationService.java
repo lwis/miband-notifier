@@ -61,7 +61,9 @@ public class NotificationService extends NotificationListenerService implements 
 			Long duration = intent.getLongExtra("duration", 100);
 			try
 			{
+				connect();
 				vibrate(duration);
+				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -75,7 +77,9 @@ public class NotificationService extends NotificationListenerService implements 
 		public void onReceive(Context context, Intent intent) {
 			try
 			{
+				connect();
 				reboot();
+				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -93,7 +97,9 @@ public class NotificationService extends NotificationListenerService implements 
 
 			try
 			{
+				connect();
 				setColor((byte) red, (byte) green, (byte) blue);
+				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -203,7 +209,7 @@ public class NotificationService extends NotificationListenerService implements 
 					Palette palette = Palette.generate(bitmap, 1);
 					Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
 				}
-
+				connect();
 				vibrate(100);
 				setColor((byte) 6, (byte) 6, (byte) 6);
 				//this can be used to set a delay. setColor((byte)0, (byte)0, (byte)0);
@@ -222,6 +228,7 @@ public class NotificationService extends NotificationListenerService implements 
 		finally
 		{
 			Log.i(TAG, "Processed notification.");
+			disconnect();
 			if(wl != null)
 				wl.release();
 		}
@@ -322,11 +329,9 @@ public class NotificationService extends NotificationListenerService implements 
 	{
 		synchronized(bleLock)
 		{
-			connect();
 			startVibrate();
 			threadWait(duration);
 			stopVibrate();
-			disconnect();
 		}
 	}
 
@@ -335,11 +340,9 @@ public class NotificationService extends NotificationListenerService implements 
 	{
 		synchronized(bleLock)
 		{
-			connect();
 			final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 			controlPoint.setValue(new byte[]{ 12 });
 			write(controlPoint);
-			disconnect();
 		}
 	}
 
@@ -348,11 +351,9 @@ public class NotificationService extends NotificationListenerService implements 
 	{
 		synchronized(bleLock)
 		{
-			connect();
 			final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 			controlPoint.setValue(new byte[]{ 14, r, g, b, 01 });
 			write(controlPoint);
-			disconnect();
 		}
 	}
 

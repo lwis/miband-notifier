@@ -8,46 +8,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Vibrate"
-        android:id="@+id/vibrateButton"
-        android:layout_marginTop="37dp"
-        android:layout_marginEnd="21dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
-
+        android:id="@+id/vibrateButton"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Reboot"
-        android:id="@+id/rebootButton"
-        android:layout_below="@+id/vibrateButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="43dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/durationField"
-        android:layout_alignBottom="@+id/vibrateButton"
-        android:layout_toStartOf="@+id/vibrateButton"
-        android:layout_marginEnd="14dp"
-        android:hint="Duration"
-        android:text="250" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Status"
-        android:id="@+id/connectedLabel"
-        android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/durationField"
-        android:layout_marginStart="6dp" />
+        android:id="@+id/rebootButton" android:layout_alignParentTop="true" android:layout_alignParentEnd="true"/>
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Set colour"
-            android:id="@+id/colourButton" android:layout_centerHorizontal="true" android:layout_below="@+id/rebootButton"/>
+            android:id="@+id/colourButton" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
+    <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/listView" android:layout_below="@+id/vibrateButton" android:layout_alignParentStart="true" android:layout_marginTop="70dp"/>
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add"
+            android:id="@+id/addButton" android:layout_marginTop="20dp" android:layout_below="@+id/rebootButton" android:layout_alignStart="@+id/rebootButton"/>
 
 </RelativeLayout>
