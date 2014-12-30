@@ -1,4 +1,6 @@
-#Mi Band Notifier
+#Mi Band Notifier [![Build Status](https://travis-ci.org/lwis/miband-notifier.svg?branch=master)](https://travis-ci.org/lwis/miband-notifier)
+
+Warning: this app is very much in the development stages.
 
 This app currently only works with the Xiaomi Mi Band, and requires the main app to be installed and paired with the band - as the band is not discoverable once paired.
 
