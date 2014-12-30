@@ -113,4 +113,14 @@ public class UserPreferences
 	{
 		mAppsToNotify.remove(key);
 	}
+
+	public boolean ismNotifyAllApps()
+	{
+		return mNotifyAllApps;
+	}
+
+	public int getmBandColour()
+	{
+		return mBandColour;
+	}
 }

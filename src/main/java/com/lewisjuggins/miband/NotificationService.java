@@ -24,9 +24,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 import com.lewisjuggins.miband.model.MiBand;
+import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 
 import java.io.FileNotFoundException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -217,52 +222,93 @@ public class NotificationService extends NotificationListenerService implements 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mColourReceiver);
 	}
 
+	//TODO: Write a test for this.
+	private boolean isAllowedNow(final Date startTime, final Date endTime, final boolean requiresNonInteractive, final boolean lightsOutsidePeriod)
+	{
+		try
+		{
+			final DateFormat f = new SimpleDateFormat("HH:mm:ss");
+			final Date now = f.parse(f.format(new Date()));
+
+			final boolean timeResult = ((now.after(startTime) && now.before(endTime)) || now.equals(startTime) || now.equals(endTime));
+			final boolean rNIResult = requiresNonInteractive && !pm.isInteractive();
+			final boolean lightsOnlyResult = !timeResult && lightsOutsidePeriod && !rNIResult;
+
+			Log.i(TAG, "" + timeResult);
+			Log.i(TAG, "" + lightsOnlyResult);
+			Log.i(TAG, "" + rNIResult);
+
+			return timeResult || lightsOnlyResult || rNIResult;
+		}
+		catch(ParseException e)
+		{
+			Log.e(TAG, e.toString());
+		}
+		return false;
+	}
+
 	@Override
 	public void onNotificationPosted(StatusBarNotification sbn)
 	{
 		super.onNotificationPosted(sbn);
-		Log.i(TAG, "Processing notification.");
+		final UserPreferences userPreferences = UserPreferences.getInstance();
+		final Application application = userPreferences.getApp(sbn.getPackageName());
+		Log.i(TAG, "Notification");
 
-		PowerManager.WakeLock wl = null;
-		try
+		if(application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(), application.ismLightsOnlyOutsideOfPeriod()) || userPreferences.ismNotifyAllApps())
 		{
-			if(sbn.isClearable())
+			Log.i(TAG, "Processing notification.");
+
+			PowerManager.WakeLock wl = null;
+			try
 			{
-				wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "NotificationService");
-
-				wl.acquire();
-				connect();
-				Notification mNotification = sbn.getNotification();
-				Bundle extras = mNotification.extras;
-
-				Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
-				if(bitmap != null)
+				if(sbn.isClearable())
 				{
-					Palette palette = Palette.generate(bitmap, 1);
-					Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
+					wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "NotificationService");
+
+					wl.acquire();
+					connect();
+					Notification mNotification = sbn.getNotification();
+					Bundle extras = mNotification.extras;
+
+					Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
+					if(bitmap != null)
+					{
+						Palette palette = Palette.generate(bitmap, 1);
+						Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
+					}
+
+					if(application == null || !application.ismLightsOnlyOutsideOfPeriod())
+					{
+						for(int i = 0; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
+						{
+							vibrate(application != null ? application.getmVibrateDuration() : 250);
+						}
+					}
+
+					for(int i = 0; i <= (application != null ? application.getmBandColourTimes() : 1); i++)
+					{
+						flashBandLights(application != null ? application.getmBandColour() : -1509123, userPreferences.getmBandColour(),
+								application != null ? application.getmBandColourDuration() : 250);
+
+					}
 				}
-
-				vibrate(100);
-				setColor((byte) 6, (byte) 6, (byte) 6, true);
-				//this can be used to set a delay. setColor((byte)0, (byte)0, (byte)0, false);
-
-				//TODO: need to retrieve the previous colour to restore.
 			}
-		}
-		catch(MiBandConnectFailureException e)
-		{
-			//Connection failed.
-		}
-		catch(Exception e)
-		{
-			Log.e(TAG, e.toString());
-		}
-		finally
-		{
-			Log.i(TAG, "Processed notification.");
-			disconnect();
-			if(wl != null)
-				wl.release();
+			catch(MiBandConnectFailureException e)
+			{
+				//Connection failed.
+			}
+			catch(Exception e)
+			{
+				Log.e(TAG, e.toString());
+			}
+			finally
+			{
+				Log.i(TAG, "Processed notification.");
+				disconnect();
+				if(wl != null)
+					wl.release();
+			}
 		}
 	}
 
@@ -386,6 +432,29 @@ public class NotificationService extends NotificationListenerService implements 
 			final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 			controlPoint.setValue(new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 });
 			write(controlPoint);
+		}
+	}
+
+	private byte[] convertRgb(int rgb)
+	{
+		int red = ((rgb >> 16) & 0x0ff) / 42;
+		int green = ((rgb >> 8) & 0x0ff) / 42;
+		int blue = ((rgb) & 0x0ff) / 42;
+
+		return new byte[]{ (byte) red, (byte) green, (byte) blue };
+	}
+
+	private void flashBandLights(int flashColour, int originalColour, int duration)
+		throws MiBandConnectFailureException
+	{
+		synchronized(bleLock)
+		{
+			final byte[] flashColours = convertRgb(flashColour);
+			final byte[] originalColours = convertRgb(originalColour);
+
+			setColor(flashColours[0], flashColours[2], flashColours[2], true);
+			threadWait(duration);
+			setColor(originalColours[0], originalColours[1], originalColours[2], false);
 		}
 	}
 

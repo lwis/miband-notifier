@@ -33,7 +33,7 @@ public class AppPreferenceActivity extends Activity
 
 	private Application mApplication;
 
-	private final DateFormat formatter = new SimpleDateFormat("hh:mm:ss");
+	private final DateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
 	private View.OnClickListener mDoneButtonListener = new View.OnClickListener()
 	{

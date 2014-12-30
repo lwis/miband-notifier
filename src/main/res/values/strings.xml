@@ -9,7 +9,7 @@
     <string name="start">Start</string>
     <string name="end">End</string>
     <string name="user_not_present">User not present</string>
-    <string name="no_vibrate_outside_of_period">No vibrate outside of period</string>
+    <string name="no_vibrate_outside_of_period">Lights outside of period</string>
     <string name="done">Done</string>
     <string name="temp_text">App Name</string>
 </resources>
