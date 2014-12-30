@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="App Name"
+            android:id="@+id/appNameLabel" android:layout_marginTop="32dp" android:layout_alignParentTop="true" android:layout_alignParentStart="true" android:layout_marginStart="86dp"/>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/iconView"
+            android:minWidth="50dp"
+            android:minHeight="50dp" android:layout_alignParentTop="true" android:layout_alignParentStart="true" android:layout_marginStart="25dp" android:layout_marginTop="19dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Vibrations"
+            android:id="@+id/vibrationsLabel" android:layout_marginTop="20dp" android:layout_below="@+id/iconView" android:layout_alignStart="@+id/iconView" android:minHeight="32dp"
+            android:layout_alignParentEnd="false" android:gravity="center"/>
+    <SeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar" android:minWidth="170dp" android:layout_alignTop="@+id/vibrationsLabel" android:layout_toEndOf="@+id/vibrationsLabel" android:layout_marginStart="19dp"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="Duration"
+              android:id="@+id/textView" android:layout_marginTop="20dp" android:minHeight="32dp"
+              android:gravity="center" android:layout_below="@+id/vibrationsLabel" android:layout_alignStart="@+id/vibrationsLabel"/>
+    <SeekBar android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/seekBar2" android:minWidth="170dp"
+             android:layout_alignTop="@+id/textView" android:layout_alignStart="@+id/seekBar"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="Flash"
+              android:id="@+id/textView2" android:layout_marginTop="20dp" android:minHeight="32dp" android:gravity="center"
+              android:layout_below="@+id/textView" android:layout_alignStart="@+id/textView"/>
+    <SeekBar android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/seekBar3" android:minWidth="170dp"
+             android:layout_alignTop="@+id/textView2" android:layout_alignStart="@+id/seekBar2"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="Duration"
+              android:id="@+id/textView3" android:layout_marginTop="20dp" android:minHeight="32dp" android:gravity="center"
+              android:layout_below="@+id/textView2" android:layout_alignStart="@+id/textView2"/>
+    <SeekBar android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/seekBar4" android:minWidth="170dp"
+             android:layout_alignTop="@+id/textView3" android:layout_alignStart="@+id/seekBar3"/>
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Colour"
+            android:id="@+id/colourButton" android:layout_marginTop="10dp" android:minHeight="10dp" android:layout_below="@+id/editText2" android:layout_alignEnd="@+id/editText2"/>
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="time"
+            android:ems="10"
+            android:id="@+id/editText" android:layout_marginTop="20dp" android:layout_below="@+id/seekBar4" android:layout_alignStart="@+id/seekBar4"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="Start"
+              android:id="@+id/textView4" android:minHeight="32dp" android:gravity="center"
+              android:layout_alignTop="@+id/editText" android:layout_alignStart="@+id/textView3" android:layout_alignBottom="@+id/editText"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="End"
+              android:id="@+id/textView5" android:minHeight="32dp" android:gravity="center"
+              android:layout_below="@+id/textView4" android:layout_alignStart="@+id/textView4" android:layout_marginTop="20dp" android:layout_alignBottom="@+id/editText2"/>
+    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:inputType="time" android:ems="10" android:id="@+id/editText2"
+              android:layout_alignStart="@+id/editText" android:layout_below="@+id/editText" android:layout_marginTop="20dp"/>
+    <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User not present"
+            android:id="@+id/checkBox" android:checked="false" android:layout_below="@+id/checkBox2" android:layout_alignStart="@+id/checkBox2"/>
+    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/checkBox2" android:checked="false"
+              android:text="No vibrate outside of period" android:layout_alignTop="@+id/colourButton" android:layout_alignStart="@+id/textView5" android:layout_marginLeft="-7dp"/>
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Done"
+            android:id="@+id/button" android:layout_below="@+id/colourButton" android:layout_alignStart="@+id/colourButton"/>
+</RelativeLayout>

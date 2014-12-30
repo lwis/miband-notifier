@@ -23,8 +23,20 @@ import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.lewisjuggins.miband.model.MiBand;
+import com.lewisjuggins.miband.preferences.UserPreferences;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -72,6 +84,11 @@ public class NotificationService extends NotificationListenerService implements 
 		}
 	};
 
+	public static void main(String[] args)
+	{
+		System.out.println(Float.parseFloat("0t"));
+	}
+
 	private BroadcastReceiver mRebootReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -98,7 +115,7 @@ public class NotificationService extends NotificationListenerService implements 
 			try
 			{
 				connect();
-				setColor((byte) red, (byte) green, (byte) blue);
+				setColor((byte) red, (byte) green, (byte) blue, true);
 				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
@@ -120,6 +137,70 @@ public class NotificationService extends NotificationListenerService implements 
 		return super.bindService(service, conn, flags);
 	}
 
+	private void loadPreferences()
+	{
+		try
+		{
+			Gson gson = new Gson();
+			FileInputStream fis = openFileInput(UserPreferences.FILE_NAME);
+			JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(fis)));
+
+			UserPreferences userPreferences = gson.fromJson(jsonReader, UserPreferences.class);
+
+			jsonReader.close();
+			fis.close();
+		}
+		catch(FileNotFoundException e)
+		{
+
+		}
+		catch(IOException e)
+		{
+
+		}
+		finally
+		{
+
+		}
+	}
+
+	private void savePreferences(UserPreferences userPreferences)
+	{
+		try
+		{
+			Gson gson = new Gson();
+			gson.toJson(userPreferences);
+
+			FileOutputStream fos = openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE);
+			JsonWriter jsonWriter = new JsonWriter(new BufferedWriter(new OutputStreamWriter(fos)));
+			jsonWriter.beginObject();
+			jsonWriter.endObject();
+			jsonWriter.close();
+			fos.close();
+		}
+		catch(FileNotFoundException e)
+		{
+
+		}
+		catch(IOException e)
+		{
+
+		}
+		finally
+		{
+
+		}
+	}
+
+	public boolean isBtEnabled() {
+		final BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+		if(manager == null) return false;
+
+		final BluetoothAdapter adapter = manager.getAdapter();
+		if(adapter == null) return false;
+
+		return adapter.isEnabled();
+	}
 
 	private int attempts = 0;
 	private void setupBluetooth()
@@ -199,7 +280,7 @@ public class NotificationService extends NotificationListenerService implements 
 				wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "NotificationService");
 
 				wl.acquire();
-
+				connect();
 				Notification mNotification = sbn.getNotification();
 				Bundle extras = mNotification.extras;
 
@@ -209,10 +290,10 @@ public class NotificationService extends NotificationListenerService implements 
 					Palette palette = Palette.generate(bitmap, 1);
 					Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
 				}
-				connect();
+
 				vibrate(100);
-				setColor((byte) 6, (byte) 6, (byte) 6);
-				//this can be used to set a delay. setColor((byte)0, (byte)0, (byte)0);
+				setColor((byte) 6, (byte) 6, (byte) 6, true);
+				//this can be used to set a delay. setColor((byte)0, (byte)0, (byte)0, false);
 
 				//TODO: need to retrieve the previous colour to restore.
 			}
@@ -346,13 +427,13 @@ public class NotificationService extends NotificationListenerService implements 
 		}
 	}
 
-	private void setColor(byte r, byte g, byte b)
+	private void setColor(byte r, byte g, byte b, boolean display)
 		throws MiBandConnectFailureException
 	{
 		synchronized(bleLock)
 		{
 			final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-			controlPoint.setValue(new byte[]{ 14, r, g, b, 01 });
+			controlPoint.setValue(new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 });
 			write(controlPoint);
 		}
 	}

@@ -94,8 +94,12 @@ public class MiOverviewActivity extends Activity implements Observer
 						{
 							String strName = arrayAdapter.getItem(which);
 
-							tempArray.add(strName);
-							tempAdapter.notifyDataSetChanged();
+							//tempArray.add(strName);
+							//tempAdapter.notifyDataSetChanged();
+
+							Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
+							intent.putExtra("packageName", strName);
+							startActivity(intent);
 						}
 					});
 			builderSingle.show();
