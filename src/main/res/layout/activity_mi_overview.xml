@@ -2,31 +2,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="${relativePackage}.${activityClass}" >
+    tools:context="${relativePackage}.${activityClass}">
 
     <Button
+        android:id="@+id/vibrateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Vibrate"
-        android:id="@+id/vibrateButton"/>
+        android:text="Vibrate" />
+
     <Button
+        android:id="@+id/rebootButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reboot"
-        android:id="@+id/rebootButton" android:layout_alignParentTop="true" android:layout_alignParentEnd="true"/>
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:text="Reboot" />
+
     <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Set colour"
-            android:id="@+id/colourButton" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
+        android:id="@+id/colourButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Set colour" />
+
     <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/listView" android:layout_below="@+id/vibrateButton" android:layout_alignParentStart="true" android:layout_marginTop="70dp"/>
+        android:id="@+id/listView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/vibrateButton"
+        android:layout_marginTop="70dp"
+        android:longClickable="true" />
+
     <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add"
-            android:id="@+id/addButton" android:layout_marginTop="20dp" android:layout_below="@+id/rebootButton" android:layout_alignStart="@+id/rebootButton"/>
+        android:id="@+id/addButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/rebootButton"
+        android:layout_below="@+id/rebootButton"
+        android:layout_marginTop="20dp"
+        android:text="Add" />
 
 </RelativeLayout>

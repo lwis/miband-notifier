@@ -23,20 +23,10 @@ import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import com.lewisjuggins.miband.model.MiBand;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -137,61 +127,6 @@ public class NotificationService extends NotificationListenerService implements 
 		return super.bindService(service, conn, flags);
 	}
 
-	private void loadPreferences()
-	{
-		try
-		{
-			Gson gson = new Gson();
-			FileInputStream fis = openFileInput(UserPreferences.FILE_NAME);
-			JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(fis)));
-
-			UserPreferences userPreferences = gson.fromJson(jsonReader, UserPreferences.class);
-
-			jsonReader.close();
-			fis.close();
-		}
-		catch(FileNotFoundException e)
-		{
-
-		}
-		catch(IOException e)
-		{
-
-		}
-		finally
-		{
-
-		}
-	}
-
-	private void savePreferences(UserPreferences userPreferences)
-	{
-		try
-		{
-			Gson gson = new Gson();
-			gson.toJson(userPreferences);
-
-			FileOutputStream fos = openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE);
-			JsonWriter jsonWriter = new JsonWriter(new BufferedWriter(new OutputStreamWriter(fos)));
-			jsonWriter.beginObject();
-			jsonWriter.endObject();
-			jsonWriter.close();
-			fos.close();
-		}
-		catch(FileNotFoundException e)
-		{
-
-		}
-		catch(IOException e)
-		{
-
-		}
-		finally
-		{
-
-		}
-	}
-
 	public boolean isBtEnabled() {
 		final BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		if(manager == null) return false;
@@ -244,6 +179,22 @@ public class NotificationService extends NotificationListenerService implements 
 	{
 		super.onCreate();
 		Log.i(TAG, "Starting service.");
+
+		try
+		{
+			UserPreferences.loadPreferences(openFileInput(UserPreferences.FILE_NAME));
+		}
+		catch(FileNotFoundException e)
+		{
+			try
+			{
+				new UserPreferences().savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
+			}
+			catch(FileNotFoundException e1)
+			{
+
+			}
+		}
 
 		setupBluetooth();
 

@@ -2,20 +2,25 @@ package com.lewisjuggins.miband;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.lewisjuggins.miband.colorpicker.ColorPickerDialog;
 import com.lewisjuggins.miband.model.MiBand;
+import com.lewisjuggins.miband.preferences.UserPreferences;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,9 +33,11 @@ public class MiOverviewActivity extends Activity implements Observer
 
 	private final MiBand mMiBand = MiBand.getInstance();
 
-	private final ArrayList<String> tempArray = new ArrayList<>();
+	private UserPreferences userPreferences;
 
 	private ArrayAdapter<String> tempAdapter;
+
+	private ListView mListView;
 
 	private View.OnClickListener mVibrateButtonListener = new View.OnClickListener()
 	{
@@ -56,6 +63,7 @@ public class MiOverviewActivity extends Activity implements Observer
 			{
 				@Override public void onColorSelected(int rgb)
 				{
+					Log.i(TAG, "" + rgb);
 					int red = ((rgb >> 16) & 0x0ff) / 42;
 					int green = ((rgb >> 8) & 0x0ff) / 42;
 					int blue = ((rgb) & 0x0ff) / 42;
@@ -94,15 +102,58 @@ public class MiOverviewActivity extends Activity implements Observer
 						{
 							String strName = arrayAdapter.getItem(which);
 
-							//tempArray.add(strName);
-							//tempAdapter.notifyDataSetChanged();
-
 							Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
 							intent.putExtra("packageName", strName);
+							intent.putExtra("isNew", true);
 							startActivity(intent);
 						}
 					});
 			builderSingle.show();
+		}
+	};
+
+	private AdapterView.OnItemLongClickListener mItemLongClickListerer = new AdapterView.OnItemLongClickListener()
+	{
+		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id)
+		{
+			new AlertDialog.Builder(MiOverviewActivity.this)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setTitle("Delete?")
+					.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+					{
+						@Override
+						public void onClick(DialogInterface dialog, int which)
+						{
+							final String packageName = mListView.getItemAtPosition(position).toString();
+							userPreferences.removeApp(packageName);
+							try
+							{
+								userPreferences.savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
+								tempAdapter.clear();
+								tempAdapter.addAll(userPreferences.getAppArray());
+								tempAdapter.notifyDataSetChanged();
+							}
+							catch(FileNotFoundException ignored){}
+						}
+
+					})
+					.setNegativeButton("No", null)
+					.show();
+
+			return true;
+		}
+	};
+
+	private AdapterView.OnItemClickListener mItemClickListerer = new AdapterView.OnItemClickListener()
+	{
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+		{
+			final String packageName = mListView.getItemAtPosition(position).toString();
+
+			Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
+			intent.putExtra("packageName", packageName);
+			startActivity(intent);
 		}
 	};
 
@@ -133,6 +184,24 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		super.onCreate(savedInstanceState);
 
+		try
+		{
+			UserPreferences.loadPreferences(openFileInput(UserPreferences.FILE_NAME));
+		}
+		catch(FileNotFoundException e)
+		{
+			try
+			{
+				new UserPreferences().savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
+			}
+			catch(FileNotFoundException e1)
+			{
+
+			}
+		}
+
+		userPreferences = UserPreferences.getInstance();
+
 		mMiBand.addObserver(this);
 
 		getActionBar().hide();
@@ -144,8 +213,11 @@ public class MiOverviewActivity extends Activity implements Observer
 		findViewById(R.id.colourButton).setOnClickListener(mColourSetButtonListener);
 		findViewById(R.id.addButton).setOnClickListener(mAddButtonListener);
 
-		tempAdapter = new ArrayAdapter<>(MiOverviewActivity.this, android.R.layout.simple_list_item_1, tempArray);
-		((ListView) findViewById(R.id.listView)).setAdapter(tempAdapter);
+		tempAdapter = new ArrayAdapter<>(MiOverviewActivity.this, android.R.layout.simple_list_item_1, userPreferences.getAppArray());
+		mListView = ((ListView) findViewById(R.id.listView));
+		mListView.setAdapter(tempAdapter);
+		mListView.setOnItemLongClickListener(mItemLongClickListerer);
+		mListView.setOnItemClickListener(mItemClickListerer);
 	}
 
 	@Override
