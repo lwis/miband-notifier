@@ -17,7 +17,7 @@ public class Application
 
 	private int mBandColourDuration;
 
-	private int mBandColour = -1509123;
+	private int mBandColour = 0xFFFFFFFF;
 
 	private Date mStartPeriod;
 

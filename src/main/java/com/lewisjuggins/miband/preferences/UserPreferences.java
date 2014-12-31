@@ -24,7 +24,7 @@ public class UserPreferences
 
 	private HashMap<String, Application> mAppsToNotify = new HashMap<>();
 
-	private int mBandColour = -1509123;
+	private int mBandColour = 0xFFFFFFFF;
 
 	private boolean mNotifyAllApps = false;
 

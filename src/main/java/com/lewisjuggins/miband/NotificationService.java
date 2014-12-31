@@ -270,22 +270,23 @@ public class NotificationService extends NotificationListenerService implements 
 	public void onNotificationPosted(StatusBarNotification sbn)
 	{
 		super.onNotificationPosted(sbn);
-		final UserPreferences userPreferences = UserPreferences.getInstance();
-		final Application application = userPreferences.getApp(sbn.getPackageName());
-
-		if(isBtEnabled() && application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(), application.ismLightsOnlyOutsideOfPeriod())
-				|| userPreferences.ismNotifyAllApps())
+		PowerManager.WakeLock wl = null;
+		try
 		{
-			Log.i(TAG, "Processing notification.");
+			wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
+			wl.acquire();
 
-			PowerManager.WakeLock wl = null;
-			try
+			final UserPreferences userPreferences = UserPreferences.getInstance();
+			final Application application = userPreferences.getApp(sbn.getPackageName());
+
+			if(isBtEnabled() && application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
+					application.ismLightsOnlyOutsideOfPeriod())
+					|| userPreferences.ismNotifyAllApps())
 			{
-				if(sbn.isClearable())
-				{
-					wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
+				Log.i(TAG, "Processing notification.");
 
-					wl.acquire();
+				if(true || sbn.isClearable())
+				{
 					connect();
 					Notification mNotification = sbn.getNotification();
 					Bundle extras = mNotification.extras;
@@ -306,36 +307,36 @@ public class NotificationService extends NotificationListenerService implements 
 
 					if(vibrate)
 					{
-						for(int i = 0; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
+						for(int i = 1; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
 						{
 							vibrate(application != null ? application.getmVibrateDuration() : 250);
 						}
 					}
 
-					for(int i = 0; i <= (application != null ? application.getmBandColourTimes() : 1); i++)
+					for(int i = 1; i <= (application != null ? application.getmBandColourTimes() : 1); i++)
 					{
-						flashBandLights(application != null ? application.getmBandColour() : -1509123, userPreferences.getmBandColour(),
+						flashBandLights(application != null ? application.getmBandColour() : 0xFFFFFFFF, userPreferences.getmBandColour(),
 								application != null ? application.getmBandColourDuration() : 250);
 
 					}
 				}
 			}
-			catch(MiBandConnectFailureException ignored)
+		}
+		catch(MiBandConnectFailureException ignored)
+		{
+			//We couldn't connect to the band for some reason, continue quietly.
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, e.toString());
+		}
+		finally
+		{
+			Log.i(TAG, "Processed notification.");
+			disconnect();
+			if(wl != null)
 			{
-
-			}
-			catch(Exception e)
-			{
-				Log.e(TAG, e.toString());
-			}
-			finally
-			{
-				Log.i(TAG, "Processed notification.");
-				disconnect();
-				if(wl != null)
-				{
-					wl.release();
-				}
+				wl.release();
 			}
 		}
 	}
@@ -484,7 +485,7 @@ public class NotificationService extends NotificationListenerService implements 
 			final byte[] flashColours = convertRgb(flashColour);
 			final byte[] originalColours = convertRgb(originalColour);
 
-			setColor(flashColours[0], flashColours[2], flashColours[2], true);
+			setColor(flashColours[0], flashColours[1], flashColours[2], true);
 			threadWait(duration);
 			setColor(originalColours[0], originalColours[1], originalColours[2], false);
 		}
