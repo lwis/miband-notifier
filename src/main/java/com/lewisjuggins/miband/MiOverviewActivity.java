@@ -24,6 +24,7 @@ import com.lewisjuggins.miband.model.MiBand;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +47,7 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		public void onClick(View v)
 		{
-			vibrate(250);
+			vibrate(150);
 		}
 	};
 
@@ -62,7 +63,7 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		public void onClick(View v)
 		{
-			new ColorPickerDialog(MiOverviewActivity.this, 1, new ColorPickerDialog.OnColorSelectedListener()
+			new ColorPickerDialog(MiOverviewActivity.this, userPreferences.getmBandColour(), new ColorPickerDialog.OnColorSelectedListener()
 			{
 				@Override public void onColorSelected(int rgb)
 				{
@@ -72,6 +73,8 @@ public class MiOverviewActivity extends Activity implements Observer
 					int blue = ((rgb) & 0x0ff) / 42;
 
 					setColour(red, green, blue);
+					userPreferences.setmBandColour(rgb);
+					userPreferences.savePreferences(getPreferencesOutputStream());
 				}
 			}).show();
 		}
@@ -129,16 +132,10 @@ public class MiOverviewActivity extends Activity implements Observer
 						{
 							final String packageName = mListView.getItemAtPosition(position).toString();
 							userPreferences.removeApp(packageName);
-							try
-							{
-								userPreferences.savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
-								tempAdapter.clear();
-								tempAdapter.addAll(userPreferences.getAppArray());
-								tempAdapter.notifyDataSetChanged();
-							}
-							catch(FileNotFoundException ignored)
-							{
-							}
+							userPreferences.savePreferences(getPreferencesOutputStream());
+							tempAdapter.clear();
+							tempAdapter.addAll(userPreferences.getAppArray());
+							tempAdapter.notifyDataSetChanged();
 						}
 
 					})
@@ -207,6 +204,25 @@ public class MiOverviewActivity extends Activity implements Observer
 		return false;
 	}
 
+	private FileOutputStream getPreferencesOutputStream()
+	{
+		try
+		{
+			return openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE);
+		}
+		catch(FileNotFoundException e)
+		{
+			try
+			{
+				new UserPreferences().savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
+			}
+			catch(FileNotFoundException ignored)
+			{
+			}
+		}
+		return null;
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -218,14 +234,7 @@ public class MiOverviewActivity extends Activity implements Observer
 		}
 		catch(FileNotFoundException e)
 		{
-			try
-			{
-				new UserPreferences().savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
-			}
-			catch(FileNotFoundException e1)
-			{
-
-			}
+			new UserPreferences().savePreferences(getPreferencesOutputStream());
 		}
 
 		userPreferences = UserPreferences.getInstance();

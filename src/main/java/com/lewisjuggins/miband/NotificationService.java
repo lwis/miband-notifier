@@ -285,7 +285,7 @@ public class NotificationService extends NotificationListenerService implements 
 			{
 				Log.i(TAG, "Processing notification.");
 
-				if(true || sbn.isClearable())
+				if(sbn.isClearable())
 				{
 					connect();
 					Notification mNotification = sbn.getNotification();
