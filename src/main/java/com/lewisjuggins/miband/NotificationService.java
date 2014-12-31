@@ -32,34 +32,28 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Lewis on 28/12/14.
  */
-public class NotificationService extends NotificationListenerService implements Observer
+public class NotificationService extends NotificationListenerService
 {
 	private String TAG = this.getClass().getSimpleName();
 
 	private final MiBand mMiBand = MiBand.getInstance();
 
-	private boolean setupCompleted;
-
 	// BLUETOOTH
 	private String mDeviceAddress;
-	private BluetoothManager mBluetoothManager;
-	private BluetoothAdapter mBluetoothAdapter;
-	private BluetoothDevice mBluetoothMi;
 	private BluetoothGatt mGatt;
 
 	private CountDownLatch countDownLatch = new CountDownLatch(1);
 
 	private PowerManager pm;
+
+	private boolean bluetoothOn = true;
 
 	//Required due to serial Bluetooth writes.
 	private Object bleLock = new Object();
@@ -72,9 +66,7 @@ public class NotificationService extends NotificationListenerService implements 
 			Long duration = intent.getLongExtra("duration", 100);
 			try
 			{
-				connect();
 				vibrate(duration);
-				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -90,9 +82,7 @@ public class NotificationService extends NotificationListenerService implements 
 		{
 			try
 			{
-				connect();
 				reboot();
-				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -112,13 +102,32 @@ public class NotificationService extends NotificationListenerService implements 
 
 			try
 			{
-				connect();
 				setColor((byte) red, (byte) green, (byte) blue, true);
-				disconnect();
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				//ignore.
+			}
+		}
+	};
+
+	private final BroadcastReceiver bluetoothStatusChangeReceiver = new BroadcastReceiver()
+	{
+		public void onReceive(Context context, Intent intent)
+		{
+			String action = intent.getAction();
+			if(action.equals(BluetoothAdapter.ACTION_STATE_CHANGED))
+			{
+				if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF)
+				{
+					bluetoothOn = false;
+					mGatt = null;
+				}
+				else if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_ON)
+				{
+					bluetoothOn = true;
+					setupBluetooth();
+				}
 			}
 		}
 	};
@@ -141,15 +150,18 @@ public class NotificationService extends NotificationListenerService implements 
 		final BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		if(manager == null)
 		{
+			bluetoothOn = false;
 			return false;
 		}
 
 		final BluetoothAdapter adapter = manager.getAdapter();
 		if(adapter == null)
 		{
+			bluetoothOn = false;
 			return false;
 		}
 
+		bluetoothOn = true;
 		return adapter.isEnabled();
 	}
 
@@ -157,11 +169,11 @@ public class NotificationService extends NotificationListenerService implements 
 
 	private void setupBluetooth()
 	{
-		if(isBtEnabled() && !setupCompleted)
+		if(isBtEnabled())
 		{
 			attempts += 1;
-			mBluetoothManager = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
-			mBluetoothAdapter = mBluetoothManager.getAdapter();
+			BluetoothManager mBluetoothManager = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
+			BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
 			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
 			for(BluetoothDevice pairedDevice : pairedDevices)
@@ -174,9 +186,12 @@ public class NotificationService extends NotificationListenerService implements 
 
 			if(mDeviceAddress != null)
 			{
-				mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
+				BluetoothDevice mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
 				attempts = 0;
-				setupCompleted = true;
+
+				countDownLatch = new CountDownLatch(2);
+				mGatt = mBluetoothMi.connectGatt(this, true, mGattCallback);
+				mGatt.connect();
 			}
 			else
 			{
@@ -228,6 +243,10 @@ public class NotificationService extends NotificationListenerService implements 
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRebootReceiver, new IntentFilter("reboot"));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mColourReceiver, new IntentFilter("colour"));
 
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+		registerReceiver(bluetoothStatusChangeReceiver, filter);
+
 		Log.i(TAG, "Started service.");
 	}
 
@@ -238,6 +257,12 @@ public class NotificationService extends NotificationListenerService implements 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mVibrateReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRebootReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mColourReceiver);
+
+		if(mGatt != null)
+		{
+			mGatt.disconnect();
+			mGatt.close();
+		}
 	}
 
 	private boolean isInPeriod(final Date startTime, final Date endTime)
@@ -270,81 +295,77 @@ public class NotificationService extends NotificationListenerService implements 
 	public void onNotificationPosted(StatusBarNotification sbn)
 	{
 		super.onNotificationPosted(sbn);
-		PowerManager.WakeLock wl = null;
-		try
+
+		if(bluetoothOn)
 		{
-			wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
-			wl.acquire();
-
-			final UserPreferences userPreferences = UserPreferences.getInstance();
-			final Application application = userPreferences.getApp(sbn.getPackageName());
-
-			if(isBtEnabled() && application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
-					application.ismLightsOnlyOutsideOfPeriod())
-					|| userPreferences.ismNotifyAllApps())
+			PowerManager.WakeLock wl = null;
+			try
 			{
-				Log.i(TAG, "Processing notification.");
+				wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
+				wl.acquire();
 
-				if(sbn.isClearable())
+				final UserPreferences userPreferences = UserPreferences.getInstance();
+				final Application application = userPreferences.getApp(sbn.getPackageName());
+
+				if(isBtEnabled() && application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
+						application.ismLightsOnlyOutsideOfPeriod())
+						|| userPreferences.ismNotifyAllApps())
 				{
-					connect();
-					Notification mNotification = sbn.getNotification();
-					Bundle extras = mNotification.extras;
+					Log.i(TAG, "Processing notification.");
 
-					Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
-					if(bitmap != null)
+					if(sbn.isClearable())
 					{
-						Palette palette = Palette.generate(bitmap, 1);
-						Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
-					}
+						Notification mNotification = sbn.getNotification();
+						Bundle extras = mNotification.extras;
 
-					boolean vibrate = true;
-
-					if(application != null && !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod())
-					{
-						vibrate = false;
-					}
-
-					if(vibrate)
-					{
-						for(int i = 1; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
+						Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
+						if(bitmap != null)
 						{
-							vibrate(application != null ? application.getmVibrateDuration() : 250);
+							Palette palette = Palette.generate(bitmap, 1);
+							Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
 						}
-					}
 
-					for(int i = 1; i <= (application != null ? application.getmBandColourTimes() : 1); i++)
-					{
-						flashBandLights(application != null ? application.getmBandColour() : 0xFFFFFFFF, userPreferences.getmBandColour(),
-								application != null ? application.getmBandColourDuration() : 250);
+						boolean vibrate = true;
 
+						if(application != null && !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod())
+						{
+							vibrate = false;
+						}
+
+						if(vibrate)
+						{
+							for(int i = 1; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
+							{
+								vibrate(application != null ? application.getmVibrateDuration() : 250);
+							}
+						}
+
+						for(int i = 1; i <= (application != null ? application.getmBandColourTimes() : 1); i++)
+						{
+							flashBandLights(application != null ? application.getmBandColour() : 0xFFFFFFFF, userPreferences.getmBandColour(),
+									application != null ? application.getmBandColourDuration() : 250);
+
+						}
 					}
 				}
 			}
-		}
-		catch(MiBandConnectFailureException ignored)
-		{
-			//We couldn't connect to the band for some reason, continue quietly.
-		}
-		catch(Exception e)
-		{
-			Log.e(TAG, e.toString());
-		}
-		finally
-		{
-			Log.i(TAG, "Processed notification.");
-			disconnect();
-			if(wl != null)
+			catch(MiBandConnectFailureException ignored)
 			{
-				wl.release();
+				//We couldn't connect to the band for some reason, continue quietly.
+			}
+			catch(Exception e)
+			{
+				Log.e(TAG, e.toString());
+			}
+			finally
+			{
+				Log.i(TAG, "Processed notification.");
+				if(wl != null)
+				{
+					wl.release();
+				}
 			}
 		}
-	}
-
-	@Override
-	public void onNotificationRemoved(StatusBarNotification sbn)
-	{
-		Log.i(TAG, "Notification removed.");
 	}
 
 	private void threadWait(final long duration)
@@ -356,36 +377,6 @@ public class NotificationService extends NotificationListenerService implements 
 		catch(InterruptedException e)
 		{
 			threadWait(duration);
-		}
-	}
-
-	private void connect()
-			throws MiBandConnectFailureException
-	{
-		setupBluetooth();
-		try
-		{
-			countDownLatch = new CountDownLatch(2);
-			mGatt = mBluetoothMi.connectGatt(this, false, mGattCallback);
-			mGatt.connect();
-			final boolean result = countDownLatch.await(10, TimeUnit.SECONDS);
-			if(!result)
-			{
-				throw new MiBandConnectFailureException("Failed to connect to BLE");
-			}
-		}
-		catch(InterruptedException e)
-		{
-			connect();
-		}
-	}
-
-	private void disconnect()
-	{
-		if(mGatt != null)
-		{
-			mGatt.disconnect();
-			mGatt.close();
 		}
 	}
 
@@ -414,7 +405,7 @@ public class NotificationService extends NotificationListenerService implements 
 		final long start = System.currentTimeMillis();
 
 		final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-		controlPoint.setValue(new byte[]{ (byte) 8, (byte) 1 });
+		controlPoint.setValue(new byte[]{ (byte) 8, (byte) 2 });
 		write(controlPoint);
 
 		final long end = System.currentTimeMillis();
@@ -534,17 +525,11 @@ public class NotificationService extends NotificationListenerService implements 
 		}
 
 		@Override
-		public void onCharacteristicWrite(BluetoothGatt gatt,
-				BluetoothGattCharacteristic characteristic, int status)
+		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
 		{
 			countDownLatch.countDown();
 		}
 	};
-
-	@Override public void update(Observable observable, Object data)
-	{
-
-	}
 }
 
 
