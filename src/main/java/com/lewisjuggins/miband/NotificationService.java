@@ -62,9 +62,11 @@ public class NotificationService extends NotificationListenerService implements 
 	//Required due to serial Bluetooth writes.
 	private Object bleLock = new Object();
 
-	private BroadcastReceiver mVibrateReceiver = new BroadcastReceiver() {
+	private BroadcastReceiver mVibrateReceiver = new BroadcastReceiver()
+	{
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(Context context, Intent intent)
+		{
 			Long duration = intent.getLongExtra("duration", 100);
 			try
 			{
@@ -79,14 +81,11 @@ public class NotificationService extends NotificationListenerService implements 
 		}
 	};
 
-	public static void main(String[] args)
+	private BroadcastReceiver mRebootReceiver = new BroadcastReceiver()
 	{
-		System.out.println(Float.parseFloat("0t"));
-	}
-
-	private BroadcastReceiver mRebootReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(Context context, Intent intent)
+		{
 			try
 			{
 				connect();
@@ -100,9 +99,11 @@ public class NotificationService extends NotificationListenerService implements 
 		}
 	};
 
-	private BroadcastReceiver mColourReceiver = new BroadcastReceiver() {
+	private BroadcastReceiver mColourReceiver = new BroadcastReceiver()
+	{
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(Context context, Intent intent)
+		{
 			int red = intent.getIntExtra("red", 6);
 			int green = intent.getIntExtra("green", 6);
 			int blue = intent.getIntExtra("blue", 6);
@@ -121,7 +122,8 @@ public class NotificationService extends NotificationListenerService implements 
 	};
 
 	@Override
-	public IBinder onBind(Intent intent) {
+	public IBinder onBind(Intent intent)
+	{
 		Log.i(TAG, "Binding to intent.");
 		return super.onBind(intent);
 	}
@@ -132,17 +134,25 @@ public class NotificationService extends NotificationListenerService implements 
 		return super.bindService(service, conn, flags);
 	}
 
-	public boolean isBtEnabled() {
+	public boolean isBtEnabled()
+	{
 		final BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-		if(manager == null) return false;
+		if(manager == null)
+		{
+			return false;
+		}
 
 		final BluetoothAdapter adapter = manager.getAdapter();
-		if(adapter == null) return false;
+		if(adapter == null)
+		{
+			return false;
+		}
 
 		return adapter.isEnabled();
 	}
 
 	private int attempts = 0;
+
 	private void setupBluetooth()
 	{
 		attempts += 1;
@@ -150,8 +160,10 @@ public class NotificationService extends NotificationListenerService implements 
 		mBluetoothAdapter = mBluetoothManager.getAdapter();
 		Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
-		for (BluetoothDevice pairedDevice : pairedDevices) {
-			if (pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER)) {
+		for(BluetoothDevice pairedDevice : pairedDevices)
+		{
+			if(pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER))
+			{
 				mDeviceAddress = pairedDevice.getAddress();
 			}
 		}
@@ -222,23 +234,13 @@ public class NotificationService extends NotificationListenerService implements 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mColourReceiver);
 	}
 
-	//TODO: Write a test for this.
-	private boolean isAllowedNow(final Date startTime, final Date endTime, final boolean requiresNonInteractive, final boolean lightsOutsidePeriod)
+	private boolean isInPeriod(final Date startTime, final Date endTime)
 	{
 		try
 		{
 			final DateFormat f = new SimpleDateFormat("HH:mm:ss");
 			final Date now = f.parse(f.format(new Date()));
-
-			final boolean timeResult = ((now.after(startTime) && now.before(endTime)) || now.equals(startTime) || now.equals(endTime));
-			final boolean rNIResult = requiresNonInteractive && !pm.isInteractive();
-			final boolean lightsOnlyResult = !timeResult && lightsOutsidePeriod && !rNIResult;
-
-			Log.i(TAG, "" + timeResult);
-			Log.i(TAG, "" + lightsOnlyResult);
-			Log.i(TAG, "" + rNIResult);
-
-			return timeResult || lightsOnlyResult || rNIResult;
+			return ((now.after(startTime) && now.before(endTime)) || now.equals(startTime) || now.equals(endTime));
 		}
 		catch(ParseException e)
 		{
@@ -247,24 +249,35 @@ public class NotificationService extends NotificationListenerService implements 
 		return false;
 	}
 
+	private boolean isAllowedNow(final Date startTime, final Date endTime, final boolean requiresNonInteractive, final boolean lightsOutsidePeriod)
+	{
+		final boolean timeResult = isInPeriod(startTime, endTime) || lightsOutsidePeriod;
+		final boolean rNIResult = !requiresNonInteractive || !pm.isInteractive();
+
+		Log.i(TAG, "" + timeResult);
+		Log.i(TAG, "" + rNIResult);
+
+		return timeResult && rNIResult;
+	}
+
 	@Override
 	public void onNotificationPosted(StatusBarNotification sbn)
 	{
 		super.onNotificationPosted(sbn);
 		final UserPreferences userPreferences = UserPreferences.getInstance();
 		final Application application = userPreferences.getApp(sbn.getPackageName());
-		Log.i(TAG, "Notification");
 
-		if(application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(), application.ismLightsOnlyOutsideOfPeriod()) || userPreferences.ismNotifyAllApps())
+		if(application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(), application.ismLightsOnlyOutsideOfPeriod())
+				|| userPreferences.ismNotifyAllApps())
 		{
 			Log.i(TAG, "Processing notification.");
 
 			PowerManager.WakeLock wl = null;
 			try
 			{
-				if(sbn.isClearable())
+				if(true || sbn.isClearable())
 				{
-					wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "NotificationService");
+					wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
 
 					wl.acquire();
 					connect();
@@ -278,7 +291,14 @@ public class NotificationService extends NotificationListenerService implements 
 						Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
 					}
 
-					if(application == null || !application.ismLightsOnlyOutsideOfPeriod())
+					boolean vibrate = true;
+
+					if(application != null && !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod())
+					{
+						vibrate = false;
+					}
+
+					if(vibrate)
 					{
 						for(int i = 0; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
 						{
@@ -294,9 +314,9 @@ public class NotificationService extends NotificationListenerService implements 
 					}
 				}
 			}
-			catch(MiBandConnectFailureException e)
+			catch(MiBandConnectFailureException ignored)
 			{
-				//Connection failed.
+
 			}
 			catch(Exception e)
 			{
@@ -307,7 +327,9 @@ public class NotificationService extends NotificationListenerService implements 
 				Log.i(TAG, "Processed notification.");
 				disconnect();
 				if(wl != null)
+				{
 					wl.release();
+				}
 			}
 		}
 	}
@@ -352,8 +374,11 @@ public class NotificationService extends NotificationListenerService implements 
 
 	private void disconnect()
 	{
-		mGatt.disconnect();
-		mGatt.close();
+		if(mGatt != null)
+		{
+			mGatt.disconnect();
+			mGatt.close();
+		}
 	}
 
 	private void write(final BluetoothGattCharacteristic characteristic)
@@ -414,7 +439,7 @@ public class NotificationService extends NotificationListenerService implements 
 	}
 
 	private void reboot()
-		throws MiBandConnectFailureException
+			throws MiBandConnectFailureException
 	{
 		synchronized(bleLock)
 		{
@@ -425,7 +450,7 @@ public class NotificationService extends NotificationListenerService implements 
 	}
 
 	private void setColor(byte r, byte g, byte b, boolean display)
-		throws MiBandConnectFailureException
+			throws MiBandConnectFailureException
 	{
 		synchronized(bleLock)
 		{
@@ -445,7 +470,7 @@ public class NotificationService extends NotificationListenerService implements 
 	}
 
 	private void flashBandLights(int flashColour, int originalColour, int duration)
-		throws MiBandConnectFailureException
+			throws MiBandConnectFailureException
 	{
 		synchronized(bleLock)
 		{
