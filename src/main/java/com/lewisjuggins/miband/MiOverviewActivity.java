@@ -136,7 +136,9 @@ public class MiOverviewActivity extends Activity implements Observer
 								tempAdapter.addAll(userPreferences.getAppArray());
 								tempAdapter.notifyDataSetChanged();
 							}
-							catch(FileNotFoundException ignored){}
+							catch(FileNotFoundException ignored)
+							{
+							}
 						}
 
 					})
@@ -182,16 +184,21 @@ public class MiOverviewActivity extends Activity implements Observer
 		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 	}
 
-	private boolean isEnabled() {
+	private boolean isEnabled()
+	{
 		String pkgName = getPackageName();
 		final String flat = Settings.Secure.getString(getContentResolver(),
 				"enabled_notification_listeners");
-		if (!TextUtils.isEmpty(flat)) {
+		if(!TextUtils.isEmpty(flat))
+		{
 			final String[] names = flat.split(":");
-			for (int i = 0; i < names.length; i++) {
+			for(int i = 0; i < names.length; i++)
+			{
 				final ComponentName cn = ComponentName.unflattenFromString(names[i]);
-				if (cn != null) {
-					if (TextUtils.equals(pkgName, cn.getPackageName())) {
+				if(cn != null)
+				{
+					if(TextUtils.equals(pkgName, cn.getPackageName()))
+					{
 						return true;
 					}
 				}
@@ -246,26 +253,32 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		super.onResume();
 		boolean isEnabledNLS = isEnabled();
-		if (!isEnabledNLS) {
+		if(!isEnabledNLS)
+		{
 			showConfirmDialog();
 		}
 	}
 
-	private void showConfirmDialog() {
+	private void showConfirmDialog()
+	{
 		new AlertDialog.Builder(this)
 				.setMessage("Please enable notification access")
 				.setTitle("Notification Access")
 				.setIconAttribute(android.R.attr.alertDialogIcon)
 				.setCancelable(true)
 				.setPositiveButton(android.R.string.ok,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
+						new DialogInterface.OnClickListener()
+						{
+							public void onClick(DialogInterface dialog, int id)
+							{
 								startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
 							}
 						})
 				.setNegativeButton(android.R.string.cancel,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
+						new DialogInterface.OnClickListener()
+						{
+							public void onClick(DialogInterface dialog, int id)
+							{
 								finish();
 							}
 						})

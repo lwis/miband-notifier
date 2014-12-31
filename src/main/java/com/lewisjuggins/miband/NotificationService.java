@@ -48,6 +48,8 @@ public class NotificationService extends NotificationListenerService implements 
 
 	private final MiBand mMiBand = MiBand.getInstance();
 
+	private boolean setupCompleted;
+
 	// BLUETOOTH
 	private String mDeviceAddress;
 	private BluetoothManager mBluetoothManager;
@@ -155,38 +157,42 @@ public class NotificationService extends NotificationListenerService implements 
 
 	private void setupBluetooth()
 	{
-		attempts += 1;
-		mBluetoothManager = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
-		mBluetoothAdapter = mBluetoothManager.getAdapter();
-		Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-		for(BluetoothDevice pairedDevice : pairedDevices)
+		if(isBtEnabled() && !setupCompleted)
 		{
-			if(pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER))
+			attempts += 1;
+			mBluetoothManager = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
+			mBluetoothAdapter = mBluetoothManager.getAdapter();
+			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+			for(BluetoothDevice pairedDevice : pairedDevices)
 			{
-				mDeviceAddress = pairedDevice.getAddress();
+				if(pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER))
+				{
+					mDeviceAddress = pairedDevice.getAddress();
+				}
 			}
-		}
 
-		if(mDeviceAddress != null)
-		{
-			mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
-			attempts = 0;
-		}
-		else
-		{
-			//Wait 10 seconds and try again, sometimes the Bluetooth adapter takes a while.
-			if(attempts <= 10)
+			if(mDeviceAddress != null)
 			{
-				try
+				mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
+				attempts = 0;
+				setupCompleted = true;
+			}
+			else
+			{
+				//Wait 10 seconds and try again, sometimes the Bluetooth adapter takes a while.
+				if(attempts <= 10)
 				{
-					Thread.sleep(10000);
+					try
+					{
+						Thread.sleep(10000);
+					}
+					catch(InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					setupBluetooth();
 				}
-				catch(InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-				setupBluetooth();
 			}
 		}
 	}
@@ -267,7 +273,7 @@ public class NotificationService extends NotificationListenerService implements 
 		final UserPreferences userPreferences = UserPreferences.getInstance();
 		final Application application = userPreferences.getApp(sbn.getPackageName());
 
-		if(application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(), application.ismLightsOnlyOutsideOfPeriod())
+		if(isBtEnabled() && application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(), application.ismLightsOnlyOutsideOfPeriod())
 				|| userPreferences.ismNotifyAllApps())
 		{
 			Log.i(TAG, "Processing notification.");
@@ -275,7 +281,7 @@ public class NotificationService extends NotificationListenerService implements 
 			PowerManager.WakeLock wl = null;
 			try
 			{
-				if(true || sbn.isClearable())
+				if(sbn.isClearable())
 				{
 					wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
 
@@ -355,6 +361,7 @@ public class NotificationService extends NotificationListenerService implements 
 	private void connect()
 			throws MiBandConnectFailureException
 	{
+		setupBluetooth();
 		try
 		{
 			countDownLatch = new CountDownLatch(2);
