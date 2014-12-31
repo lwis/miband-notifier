@@ -31,6 +31,7 @@ public class ApplicationArrayAdapter extends ArrayAdapter<Application>
 	{
 		try
 		{
+			//This behaves weirdly (unable to resolve the local variables) when the LayoutInflater isn't used - this is not performant.
 			final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			final View rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
 

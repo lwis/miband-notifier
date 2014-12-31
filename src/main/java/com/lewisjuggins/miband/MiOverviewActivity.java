@@ -22,6 +22,7 @@ import com.lewisjuggins.miband.colorpicker.ColorPickerDialog;
 import com.lewisjuggins.miband.model.MiBand;
 import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
+import com.melnykov.fab.FloatingActionButton;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -248,7 +249,7 @@ public class MiOverviewActivity extends Activity implements Observer
 		findViewById(R.id.vibrateButton).setOnClickListener(mVibrateButtonListener);
 		findViewById(R.id.rebootButton).setOnClickListener(mRebootButtonListener);
 		findViewById(R.id.colourButton).setOnClickListener(mColourSetButtonListener);
-		findViewById(R.id.addButton).setOnClickListener(mAddButtonListener);
+		findViewById(R.id.fab).setOnClickListener(mAddButtonListener);
 
 		final List<Application> appArray = userPreferences.getAppArray();
 		final PackageManager pm = getPackageManager();
@@ -280,6 +281,9 @@ public class MiOverviewActivity extends Activity implements Observer
 		mListView.setAdapter(mAppArrayAdapter);
 		mListView.setOnItemLongClickListener(mItemLongClickListerer);
 		mListView.setOnItemClickListener(mItemClickListerer);
+
+		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+		fab.attachToListView(mListView);
 	}
 
 	@Override
