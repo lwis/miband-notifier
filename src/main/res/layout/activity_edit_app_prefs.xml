@@ -18,14 +18,13 @@
 
     <ImageView
         android:id="@+id/iconView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="25dp"
-        android:layout_marginTop="19dp"
-        android:minHeight="50dp"
-        android:minWidth="50dp" />
+        android:layout_marginTop="20dp"
+        android:scaleType="fitXY" />
 
     <TextView
         android:id="@+id/vibrationsLabel"
@@ -136,7 +135,7 @@
         android:layout_marginTop="20dp"
         android:ems="10"
         android:inputType="time"
-        android:text="07:00:00" />
+        android:text="08:00:00" />
 
     <TextView
         android:id="@+id/startPeriodLabel"
@@ -180,7 +179,7 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/noVibrateCheckBox"
         android:layout_below="@+id/noVibrateCheckBox"
-        android:checked="false"
+        android:checked="true"
         android:text="@string/user_not_present" />
 
     <CheckBox

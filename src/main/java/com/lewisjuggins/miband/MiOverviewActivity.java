@@ -17,16 +17,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.lewisjuggins.miband.colorpicker.ColorPickerDialog;
 import com.lewisjuggins.miband.model.MiBand;
+import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -39,7 +40,7 @@ public class MiOverviewActivity extends Activity implements Observer
 
 	private UserPreferences userPreferences;
 
-	private ArrayAdapter<String> tempAdapter;
+	private ApplicationArrayAdapter mAppArrayAdapter;
 
 	private ListView mListView;
 
@@ -91,14 +92,13 @@ public class MiOverviewActivity extends Activity implements Observer
 			builderSingle.setNegativeButton("Cancel",
 					new DialogInterface.OnClickListener()
 					{
-
 						@Override
 						public void onClick(DialogInterface dialog, int which)
 						{
 							dialog.dismiss();
 						}
 					});
-			final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MiOverviewActivity.this, android.R.layout.simple_list_item_1, getApps());
+			final ApplicationArrayAdapter arrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, getApps());
 			builderSingle.setAdapter(arrayAdapter,
 					new DialogInterface.OnClickListener()
 					{
@@ -106,10 +106,10 @@ public class MiOverviewActivity extends Activity implements Observer
 						@Override
 						public void onClick(DialogInterface dialog, int which)
 						{
-							String strName = arrayAdapter.getItem(which);
+							Application application = arrayAdapter.getItem(which);
 
 							Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
-							intent.putExtra("packageName", strName);
+							intent.putExtra("packageName", application.getmPackageName());
 							intent.putExtra("isNew", true);
 							startActivity(intent);
 						}
@@ -130,12 +130,12 @@ public class MiOverviewActivity extends Activity implements Observer
 						@Override
 						public void onClick(DialogInterface dialog, int which)
 						{
-							final String packageName = mListView.getItemAtPosition(position).toString();
+							final String packageName = ((Application) mListView.getItemAtPosition(position)).getmPackageName();
 							userPreferences.removeApp(packageName);
 							userPreferences.savePreferences(getPreferencesOutputStream());
-							tempAdapter.clear();
-							tempAdapter.addAll(userPreferences.getAppArray());
-							tempAdapter.notifyDataSetChanged();
+							mAppArrayAdapter.clear();
+							mAppArrayAdapter.addAll(userPreferences.getAppArray());
+							mAppArrayAdapter.notifyDataSetChanged();
 						}
 
 					})
@@ -151,7 +151,7 @@ public class MiOverviewActivity extends Activity implements Observer
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
-			final String packageName = mListView.getItemAtPosition(position).toString();
+			final String packageName = ((Application) mListView.getItemAtPosition(position)).getmPackageName();
 
 			Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
 			intent.putExtra("packageName", packageName);
@@ -250,9 +250,34 @@ public class MiOverviewActivity extends Activity implements Observer
 		findViewById(R.id.colourButton).setOnClickListener(mColourSetButtonListener);
 		findViewById(R.id.addButton).setOnClickListener(mAddButtonListener);
 
-		tempAdapter = new ArrayAdapter<>(MiOverviewActivity.this, android.R.layout.simple_list_item_1, userPreferences.getAppArray());
+		final List<Application> appArray = userPreferences.getAppArray();
+		final PackageManager pm = getPackageManager();
+
+		for(Application app : appArray)
+		{
+			try
+			{
+				app.setmAppName(pm.getApplicationLabel(pm.getApplicationInfo(app.getmPackageName(), PackageManager.GET_META_DATA)).toString());
+			}
+			catch(PackageManager.NameNotFoundException e)
+			{
+
+			}
+		}
+
+		Collections.sort(appArray, new Comparator()
+		{
+			@Override
+			public int compare(Object lhs, Object rhs)
+			{
+				return ((Application) lhs).getmAppName().compareTo(((Application) rhs).getmAppName());
+			}
+		});
+
+
+		mAppArrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, appArray);
 		mListView = ((ListView) findViewById(R.id.listView));
-		mListView.setAdapter(tempAdapter);
+		mListView.setAdapter(mAppArrayAdapter);
 		mListView.setOnItemLongClickListener(mItemLongClickListerer);
 		mListView.setOnItemClickListener(mItemClickListerer);
 	}
@@ -308,20 +333,26 @@ public class MiOverviewActivity extends Activity implements Observer
 		return true;
 	}
 
-	private ArrayList<String> getApps()
+	private ArrayList<Application> getApps()
 	{
-		final ArrayList toRet = new ArrayList();
+		final ArrayList<Application> toRet = new ArrayList<Application>();
 		final PackageManager pm = getPackageManager();
-		//get a list of installed apps.
+
 		List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
 		for(ApplicationInfo packageInfo : packages)
 		{
-			//toRet.add(pm.getApplicationLabel(packageInfo));
-			toRet.add(packageInfo.packageName);
+			toRet.add(new Application(packageInfo.packageName, pm.getApplicationLabel(packageInfo).toString()));
 		}
 
-		Collections.sort(toRet);
+		Collections.sort(toRet, new Comparator()
+		{
+			@Override
+			public int compare(Object lhs, Object rhs)
+			{
+				return ((Application) lhs).getmAppName().compareTo(((Application) rhs).getmAppName());
+			}
+		});
 		return toRet;
 	}
 

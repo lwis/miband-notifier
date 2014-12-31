@@ -8,6 +8,8 @@ The app currently only works with Lollipop due to significant incompatible chang
 
 ##Todo:
 
+- Notification rate limiting, a queue may be appropriate here
+- Option for only in 'Priority'/'None' modes.
 - App icon
 - Improve app list display
 - Improve time pickers

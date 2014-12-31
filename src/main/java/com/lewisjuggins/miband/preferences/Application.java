@@ -27,9 +27,17 @@ public class Application
 
 	private boolean mUserPresent;
 
+	private transient String mAppName;
+
 	public Application()
 	{
 
+	}
+
+	public Application(String packageName, String applicationLabel)
+	{
+		this.mPackageName = packageName;
+		this.mAppName = applicationLabel;
 	}
 
 	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, Date mStartPeriod, Date mEndPeriod,
@@ -143,5 +151,15 @@ public class Application
 	public void setmLightsOnlyOutsideOfPeriod(boolean mLightsOnlyOutsideOfPeriod)
 	{
 		this.mLightsOnlyOutsideOfPeriod = mLightsOnlyOutsideOfPeriod;
+	}
+
+	public String getmAppName()
+	{
+		return mAppName;
+	}
+
+	public void setmAppName(String mAppName)
+	{
+		this.mAppName = mAppName;
 	}
 }
