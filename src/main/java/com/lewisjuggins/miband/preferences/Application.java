@@ -11,11 +11,11 @@ public class Application
 
 	private int mVibrateTimes;
 
-	private int mVibrateDuration;
+	private long mVibrateDuration;
 
 	private int mBandColourTimes;
 
-	private int mBandColourDuration;
+	private long mBandColourDuration;
 
 	private int mBandColour = 0xFFFFFFFF;
 
@@ -83,7 +83,7 @@ public class Application
 		this.mVibrateTimes = mVibrateTimes;
 	}
 
-	public int getmVibrateDuration()
+	public long getmVibrateDuration()
 	{
 		return mVibrateDuration;
 	}
@@ -103,7 +103,7 @@ public class Application
 		this.mBandColourTimes = mBandColourTimes;
 	}
 
-	public int getmBandColourDuration()
+	public long getmBandColourDuration()
 	{
 		return mBandColourDuration;
 	}

@@ -34,7 +34,7 @@ public class BLECommunicationManager
 
 	private BluetoothGatt mGatt;
 
-	private boolean mDeviceConnected = false;
+	public boolean mDeviceConnected = false;
 
 	private final Context mContext;
 
@@ -43,6 +43,9 @@ public class BLECommunicationManager
 	public boolean setupComplete = false;
 
 	private BluetoothDevice mBluetoothMi;
+
+	private BluetoothGattCharacteristic mControlPointChar;
+
 
 	public BLECommunicationManager(final Context context)
 	{
@@ -98,7 +101,7 @@ public class BLECommunicationManager
 		}
 	}
 
-	public synchronized void connect()
+	public synchronized void connectGatt()
 		throws MiBandConnectFailureException
 	{
 		Log.d(TAG, "Establishing connection to gatt");
@@ -106,6 +109,7 @@ public class BLECommunicationManager
 		mConnectionCountDownLatch = new CountDownLatch(2);
 		mGatt = mBluetoothMi.connectGatt(mContext, true, mGattCallback);
 		mGatt.connect();
+
 		try
 		{
 			mConnectionCountDownLatch.await(10, TimeUnit.SECONDS);
@@ -150,6 +154,16 @@ public class BLECommunicationManager
 
 	public BluetoothGattCharacteristic getCharacteristic(UUID uuid)
 	{
+		if(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT.equals(uuid) && mControlPointChar != null)
+		{
+			return mControlPointChar;
+		}
+		else if(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT.equals(uuid) && mControlPointChar == null)
+		{
+			mControlPointChar = getMiliService().getCharacteristic(uuid);
+			return mControlPointChar;
+		}
+
 		return getMiliService().getCharacteristic(uuid);
 	}
 

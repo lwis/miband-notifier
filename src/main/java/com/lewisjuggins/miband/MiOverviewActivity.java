@@ -49,7 +49,7 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		public void onClick(View v)
 		{
-			vibrate(150);
+			vibrate(50L);
 		}
 	};
 
@@ -70,9 +70,9 @@ public class MiOverviewActivity extends Activity implements Observer
 				@Override public void onColorSelected(int rgb)
 				{
 					Log.i(TAG, "" + rgb);
-					int red = ((rgb >> 16) & 0x0ff) / 42;
-					int green = ((rgb >> 8) & 0x0ff) / 42;
-					int blue = ((rgb) & 0x0ff) / 42;
+					final int red = ((rgb >> 16) & 0x0ff) / 42;
+					final int green = ((rgb >> 8) & 0x0ff) / 42;
+					final int blue = ((rgb) & 0x0ff) / 42;
 
 					setColour(red, green, blue);
 					userPreferences.setmBandColour(rgb);
@@ -228,6 +228,9 @@ public class MiOverviewActivity extends Activity implements Observer
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		final Intent serviceIntent = new Intent(this, MiBandCommunicationService.class);
+		startService(serviceIntent);
 
 		try
 		{

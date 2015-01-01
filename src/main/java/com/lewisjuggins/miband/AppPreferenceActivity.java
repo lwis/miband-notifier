@@ -120,9 +120,9 @@ public class AppPreferenceActivity extends Activity
 			mApplication = UserPreferences.getInstance().getApp(packageName);
 
 			((SeekBar) findViewById(R.id.vibrationsSeekBar)).setProgress(mApplication.getmVibrateTimes());
-			((SeekBar) findViewById(R.id.vibrationDurationSeekBar)).setProgress(mApplication.getmVibrateDuration());
+			((SeekBar) findViewById(R.id.vibrationDurationSeekBar)).setProgress((int)mApplication.getmVibrateDuration());
 			((SeekBar) findViewById(R.id.flashAmountSeekBar)).setProgress(mApplication.getmBandColourTimes());
-			((SeekBar) findViewById(R.id.flashDurationSeekBar)).setProgress(mApplication.getmBandColourDuration());
+			((SeekBar) findViewById(R.id.flashDurationSeekBar)).setProgress((int)mApplication.getmBandColourDuration());
 			((CheckBox) findViewById(R.id.noVibrateCheckBox)).setChecked(mApplication.ismLightsOnlyOutsideOfPeriod());
 			((CheckBox) findViewById(R.id.userNotPresentCheckBox)).setChecked(mApplication.ismUserPresent());
 			((EditText) findViewById(R.id.startTimeTextField)).setText(formatter.format(mApplication.getmStartPeriod()));
