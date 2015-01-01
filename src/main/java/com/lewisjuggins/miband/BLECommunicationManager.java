@@ -2,6 +2,7 @@ package com.lewisjuggins.miband;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
@@ -101,6 +102,7 @@ public class BLECommunicationManager
 		{
 			mGatt.connect().waitSafely(10000);
 			mGatt.discoverServices().waitSafely(10000);
+			mGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
 		}
 		catch(InterruptedException e)
 		{
@@ -115,6 +117,7 @@ public class BLECommunicationManager
 	{
 		if(mGatt != null)
 		{
+			mGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER);//TODO: This may not be required / or should be balanced.
 			mGatt.disconnect();
 			mGatt.close();
 		}

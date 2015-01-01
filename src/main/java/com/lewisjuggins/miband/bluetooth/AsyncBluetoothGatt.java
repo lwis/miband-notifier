@@ -222,6 +222,11 @@ public class AsyncBluetoothGatt extends BluetoothGattCallback {
 		return executeReliableWrite.promise();
 	}
 
+	public void requestConnectionPriority(int priority)
+	{
+		gatt.requestConnectionPriority(priority);
+	}
+
 	// Start reliable write transaction.
 	public boolean beginReliableWrite() {
 		return gatt.beginReliableWrite();
