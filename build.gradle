@@ -32,6 +32,16 @@ repositories {
 }
 
 dependencies {
+    repositories {
+        mavenCentral()
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
+    }
+
+    compile 'org.jdeferred:jdeferred-core:1.2.0'
+    compile 'com.google.guava:guava:17.0'
+
     compile('com.android.support:palette-v7:21.0.+')
     compile('com.google.code.gson:gson:2.3.1')
     compile('com.melnykov:floatingactionbutton:1.1.0')
