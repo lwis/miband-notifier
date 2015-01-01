@@ -2,13 +2,7 @@ package com.lewisjuggins.miband;
 
 import android.app.Notification;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +17,6 @@ import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
-import com.lewisjuggins.miband.model.MiBand;
 import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 
@@ -32,9 +25,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by Lewis on 28/12/14.
@@ -43,20 +33,9 @@ public class NotificationService extends NotificationListenerService
 {
 	private String TAG = this.getClass().getSimpleName();
 
-	private final MiBand mMiBand = MiBand.getInstance();
-
-	// BLUETOOTH
-	private String mDeviceAddress;
-	private BluetoothGatt mGatt;
-
-	private CountDownLatch countDownLatch = new CountDownLatch(1);
+	private BLECommunicationManager mBLEComms;
 
 	private PowerManager pm;
-
-	private boolean bluetoothOn = true;
-
-	//Required due to serial Bluetooth writes.
-	private Object bleLock = new Object();
 
 	private BroadcastReceiver mVibrateReceiver = new BroadcastReceiver()
 	{
@@ -120,13 +99,15 @@ public class NotificationService extends NotificationListenerService
 			{
 				if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF)
 				{
-					bluetoothOn = false;
-					mGatt = null;
+					Log.d(TAG, "Bluetooth switched off");
+					mBLEComms.mBluetoothAdapterStatus = false;
+					mBLEComms.setupComplete = false;
 				}
 				else if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_ON)
 				{
-					bluetoothOn = true;
-					setupBluetooth();
+					Log.d(TAG, "Bluetooth switched on, initialising");
+					mBLEComms.mBluetoothAdapterStatus = true;
+					mBLEComms.setupBluetooth();
 				}
 			}
 		}
@@ -143,73 +124,6 @@ public class NotificationService extends NotificationListenerService
 	public boolean bindService(Intent service, ServiceConnection conn, int flags)
 	{
 		return super.bindService(service, conn, flags);
-	}
-
-	public boolean isBtEnabled()
-	{
-		final BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-		if(manager == null)
-		{
-			bluetoothOn = false;
-			return false;
-		}
-
-		final BluetoothAdapter adapter = manager.getAdapter();
-		if(adapter == null)
-		{
-			bluetoothOn = false;
-			return false;
-		}
-
-		bluetoothOn = true;
-		return adapter.isEnabled();
-	}
-
-	private int attempts = 0;
-
-	private void setupBluetooth()
-	{
-		if(isBtEnabled())
-		{
-			attempts += 1;
-			BluetoothManager mBluetoothManager = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
-			BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
-			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-			for(BluetoothDevice pairedDevice : pairedDevices)
-			{
-				if(pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER))
-				{
-					mDeviceAddress = pairedDevice.getAddress();
-				}
-			}
-
-			if(mDeviceAddress != null)
-			{
-				BluetoothDevice mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
-				attempts = 0;
-
-				countDownLatch = new CountDownLatch(2);
-				mGatt = mBluetoothMi.connectGatt(this, true, mGattCallback);
-				mGatt.connect();
-			}
-			else
-			{
-				//Wait 10 seconds and try again, sometimes the Bluetooth adapter takes a while.
-				if(attempts <= 10)
-				{
-					try
-					{
-						Thread.sleep(10000);
-					}
-					catch(InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-					setupBluetooth();
-				}
-			}
-		}
 	}
 
 	@Override
@@ -234,7 +148,8 @@ public class NotificationService extends NotificationListenerService
 			}
 		}
 
-		setupBluetooth();
+		mBLEComms = new BLECommunicationManager(this);
+		mBLEComms.setupBluetooth();
 
 		pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
@@ -258,11 +173,7 @@ public class NotificationService extends NotificationListenerService
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRebootReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mColourReceiver);
 
-		if(mGatt != null)
-		{
-			mGatt.disconnect();
-			mGatt.close();
-		}
+		mBLEComms.disconnectGatt();
 	}
 
 	private boolean isInPeriod(final Date startTime, final Date endTime)
@@ -296,7 +207,7 @@ public class NotificationService extends NotificationListenerService
 	{
 		super.onNotificationPosted(sbn);
 
-		if(bluetoothOn)
+		if(mBLEComms.mBluetoothAdapterStatus)
 		{
 			PowerManager.WakeLock wl = null;
 			try
@@ -307,7 +218,7 @@ public class NotificationService extends NotificationListenerService
 				final UserPreferences userPreferences = UserPreferences.getInstance();
 				final Application application = userPreferences.getApp(sbn.getPackageName());
 
-				if(isBtEnabled() && application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
+				if(application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
 						application.ismLightsOnlyOutsideOfPeriod())
 						|| userPreferences.ismNotifyAllApps())
 				{
@@ -380,33 +291,13 @@ public class NotificationService extends NotificationListenerService
 		}
 	}
 
-	private void write(final BluetoothGattCharacteristic characteristic)
-	{
-		try
-		{
-			countDownLatch = new CountDownLatch(1);
-			mGatt.writeCharacteristic(characteristic);
-			countDownLatch.await();
-		}
-		catch(InterruptedException e)
-		{
-			Log.i(TAG, e.toString());
-			write(characteristic);
-		}
-	}
-
-	private BluetoothGattCharacteristic getCharacteristic(UUID uuid)
-	{
-		return getMiliService().getCharacteristic(uuid);
-	}
-
 	private long startVibrate()
 	{
 		final long start = System.currentTimeMillis();
 
-		final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
+		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 		controlPoint.setValue(new byte[]{ (byte) 8, (byte) 2 });
-		write(controlPoint);
+		mBLEComms.write(controlPoint);
 
 		final long end = System.currentTimeMillis();
 		final long timeTaken = (end - start);
@@ -417,9 +308,9 @@ public class NotificationService extends NotificationListenerService
 	{
 		final long start = System.currentTimeMillis();
 
-		final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
+		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 		controlPoint.setValue(new byte[]{ (byte) 19 });
-		write(controlPoint);
+		mBLEComms.write(controlPoint);
 
 		final long end = System.currentTimeMillis();
 		final long timeTaken = (end - start);
@@ -429,34 +320,25 @@ public class NotificationService extends NotificationListenerService
 	private void vibrate(final long duration)
 			throws MiBandConnectFailureException
 	{
-		synchronized(bleLock)
-		{
-			startVibrate();
-			threadWait(duration);
-			stopVibrate();
-		}
+		startVibrate();
+		threadWait(duration);
+		stopVibrate();
 	}
 
 	private void reboot()
 			throws MiBandConnectFailureException
 	{
-		synchronized(bleLock)
-		{
-			final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-			controlPoint.setValue(new byte[]{ 12 });
-			write(controlPoint);
-		}
+		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
+		controlPoint.setValue(new byte[]{ 12 });
+		mBLEComms.write(controlPoint);
 	}
 
 	private void setColor(byte r, byte g, byte b, boolean display)
 			throws MiBandConnectFailureException
 	{
-		synchronized(bleLock)
-		{
-			final BluetoothGattCharacteristic controlPoint = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-			controlPoint.setValue(new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 });
-			write(controlPoint);
-		}
+		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
+		controlPoint.setValue(new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 });
+		mBLEComms.write(controlPoint);
 	}
 
 	private byte[] convertRgb(int rgb)
@@ -471,65 +353,13 @@ public class NotificationService extends NotificationListenerService
 	private void flashBandLights(int flashColour, int originalColour, int duration)
 			throws MiBandConnectFailureException
 	{
-		synchronized(bleLock)
-		{
-			final byte[] flashColours = convertRgb(flashColour);
-			final byte[] originalColours = convertRgb(originalColour);
+		final byte[] flashColours = convertRgb(flashColour);
+		final byte[] originalColours = convertRgb(originalColour);
 
-			setColor(flashColours[0], flashColours[1], flashColours[2], true);
-			threadWait(duration);
-			setColor(originalColours[0], originalColours[1], originalColours[2], false);
-		}
+		setColor(flashColours[0], flashColours[1], flashColours[2], true);
+		threadWait(duration);
+		setColor(originalColours[0], originalColours[1], originalColours[2], false);
 	}
-
-	private BluetoothGattService getMiliService()
-	{
-		return mGatt.getService(MiBandConstants.UUID_SERVICE_MILI_SERVICE);
-	}
-
-	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback()
-	{
-
-		@Override
-		public void onServicesDiscovered(BluetoothGatt gatt, int status)
-		{
-			if(status == BluetoothGatt.GATT_SUCCESS)
-			{
-				countDownLatch.countDown();
-			}
-		}
-
-		@Override
-		public void onConnectionStateChange(BluetoothGatt gatt, int status,
-				int newState)
-		{
-			mGatt = gatt;
-			if(newState == BluetoothProfile.STATE_CONNECTED)
-			{
-				gatt.discoverServices();
-				mMiBand.setConnected(true);
-				countDownLatch.countDown();
-			}
-			else if(newState == BluetoothProfile.STATE_DISCONNECTED)
-			{
-				mMiBand.setConnected(false);
-			}
-			else if(newState == BluetoothProfile.STATE_CONNECTING)
-			{
-				mMiBand.setConnected(false);
-			}
-			else if(newState == BluetoothProfile.STATE_DISCONNECTING)
-			{
-				mMiBand.setConnected(false);
-			}
-		}
-
-		@Override
-		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
-		{
-			countDownLatch.countDown();
-		}
-	};
 }
 
 

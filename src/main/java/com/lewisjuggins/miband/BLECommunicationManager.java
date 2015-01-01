@@ -1,0 +1,164 @@
+package com.lewisjuggins.miband;
+
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
+import android.content.Context;
+import android.util.Log;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+
+/**
+ * Created by Lewis on 01/01/15.
+ */
+public class BLECommunicationManager
+{
+	private String TAG = this.getClass().getSimpleName();
+
+	private int attempts = 0;
+
+	private String mDeviceAddress;
+
+	private CountDownLatch countDownLatch;
+
+	private BluetoothGatt mGatt;
+
+	private boolean mDeviceConnected = false;
+
+	private final Context mContext;
+
+	public boolean mBluetoothAdapterStatus = false;
+
+	public boolean setupComplete = false;
+
+	public BLECommunicationManager(final Context context)
+	{
+		this.mContext = context;
+	}
+
+	public void setupBluetooth()
+	{
+		if(mBluetoothAdapterStatus)
+		{
+			attempts += 1;
+			final BluetoothManager mBluetoothManager = ((BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE));
+			final BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
+			final Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+			for(BluetoothDevice pairedDevice : pairedDevices)
+			{
+				if(pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER))
+				{
+					mDeviceAddress = pairedDevice.getAddress();
+				}
+			}
+
+			if(mDeviceAddress != null)
+			{
+				BluetoothDevice mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
+				attempts = 0;
+
+				countDownLatch = new CountDownLatch(2);
+				mGatt = mBluetoothMi.connectGatt(mContext, true, mGattCallback);
+				mGatt.connect();
+				setupComplete = true;
+			}
+			else
+			{
+				//Wait 10 seconds and try again, sometimes the Bluetooth adapter takes a while.
+				if(attempts <= 10)
+				{
+					try
+					{
+						Thread.sleep(10000);
+					}
+					catch(InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					setupBluetooth();
+				}
+			}
+		}
+	}
+
+	public void disconnectGatt()
+	{
+		if(mGatt != null)
+		{
+			mGatt.disconnect();
+			mGatt.close();
+		}
+	}
+
+	public synchronized void write(final BluetoothGattCharacteristic characteristic)
+	{
+		try
+		{
+			countDownLatch = new CountDownLatch(1);
+			mGatt.writeCharacteristic(characteristic);
+			countDownLatch.await();
+		}
+		catch(InterruptedException e)
+		{
+			Log.i(TAG, e.toString());
+			write(characteristic);
+		}
+	}
+
+	private BluetoothGattService getMiliService()
+	{
+		if(!setupComplete)
+			setupBluetooth();
+		return mGatt.getService(MiBandConstants.UUID_SERVICE_MILI_SERVICE);
+	}
+
+	public BluetoothGattCharacteristic getCharacteristic(UUID uuid)
+	{
+		return getMiliService().getCharacteristic(uuid);
+	}
+
+	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback()
+	{
+
+		@Override
+		public void onServicesDiscovered(BluetoothGatt gatt, int status)
+		{
+			if(status == BluetoothGatt.GATT_SUCCESS)
+			{
+				countDownLatch.countDown();
+			}
+		}
+
+		@Override
+		public void onConnectionStateChange(BluetoothGatt gatt, int status,
+				int newState)
+		{
+			mGatt = gatt;
+
+			switch(newState)
+			{
+				case BluetoothProfile.STATE_CONNECTED:
+					gatt.discoverServices();
+					mDeviceConnected = true;
+					countDownLatch.countDown();
+				default:
+					mDeviceConnected = false;
+
+			}
+		}
+
+		@Override
+		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
+		{
+			countDownLatch.countDown();
+		}
+	};
+}

@@ -13,4 +13,6 @@ public class MiBandCommunicationService extends Service
 	{
 		return null;
 	}
+
+
 }
