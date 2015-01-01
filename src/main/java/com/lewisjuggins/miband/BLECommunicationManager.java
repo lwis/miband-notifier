@@ -11,9 +11,11 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Lewis on 01/01/15.
@@ -26,7 +28,9 @@ public class BLECommunicationManager
 
 	private String mDeviceAddress;
 
-	private CountDownLatch countDownLatch;
+	private CountDownLatch mConnectionCountDownLatch;
+
+	private CountDownLatch mWriteCountdownLatch;
 
 	private BluetoothGatt mGatt;
 
@@ -38,17 +42,23 @@ public class BLECommunicationManager
 
 	public boolean setupComplete = false;
 
+	private BluetoothDevice mBluetoothMi;
+
 	public BLECommunicationManager(final Context context)
 	{
 		this.mContext = context;
+		setupBluetooth();
 	}
 
 	public void setupBluetooth()
 	{
-		if(mBluetoothAdapterStatus)
+		Log.d(TAG, "Initialising Bluetooth connection");
+
+		final BluetoothManager mBluetoothManager = ((BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE));
+
+		if(mBluetoothAdapterStatus || mBluetoothManager != null)
 		{
 			attempts += 1;
-			final BluetoothManager mBluetoothManager = ((BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE));
 			final BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
 			final Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
@@ -62,13 +72,12 @@ public class BLECommunicationManager
 
 			if(mDeviceAddress != null)
 			{
-				BluetoothDevice mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
+				mBluetoothMi = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
 				attempts = 0;
-
-				countDownLatch = new CountDownLatch(2);
-				mGatt = mBluetoothMi.connectGatt(mContext, true, mGattCallback);
-				mGatt.connect();
 				setupComplete = true;
+				mBluetoothAdapterStatus = true;
+
+				Log.d(TAG, "Initialising Bluetooth connection complete");
 			}
 			else
 			{
@@ -89,7 +98,28 @@ public class BLECommunicationManager
 		}
 	}
 
-	public void disconnectGatt()
+	public synchronized void connect()
+		throws MiBandConnectFailureException
+	{
+		Log.d(TAG, "Establishing connection to gatt");
+
+		mConnectionCountDownLatch = new CountDownLatch(2);
+		mGatt = mBluetoothMi.connectGatt(mContext, true, mGattCallback);
+		mGatt.connect();
+		try
+		{
+			mConnectionCountDownLatch.await(10, TimeUnit.SECONDS);
+		}
+		catch(InterruptedException e)
+		{
+			Log.d(TAG, "Failed to connect to gatt");
+			throw new MiBandConnectFailureException("Failed to connect");
+		}
+
+		Log.d(TAG, "Established connection to gatt");
+	}
+
+	public synchronized void disconnectGatt()
 	{
 		if(mGatt != null)
 		{
@@ -102,9 +132,9 @@ public class BLECommunicationManager
 	{
 		try
 		{
-			countDownLatch = new CountDownLatch(1);
+			mWriteCountdownLatch = new CountDownLatch(1);
 			mGatt.writeCharacteristic(characteristic);
-			countDownLatch.await();
+			mWriteCountdownLatch.await();
 		}
 		catch(InterruptedException e)
 		{
@@ -115,8 +145,6 @@ public class BLECommunicationManager
 
 	private BluetoothGattService getMiliService()
 	{
-		if(!setupComplete)
-			setupBluetooth();
 		return mGatt.getService(MiBandConstants.UUID_SERVICE_MILI_SERVICE);
 	}
 
@@ -133,24 +161,27 @@ public class BLECommunicationManager
 		{
 			if(status == BluetoothGatt.GATT_SUCCESS)
 			{
-				countDownLatch.countDown();
+				mConnectionCountDownLatch.countDown();
 			}
 		}
 
 		@Override
-		public void onConnectionStateChange(BluetoothGatt gatt, int status,
-				int newState)
+		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
 		{
-			mGatt = gatt;
-
 			switch(newState)
 			{
 				case BluetoothProfile.STATE_CONNECTED:
+					Log.d(TAG, "Gatt state: connected");
+
 					gatt.discoverServices();
 					mDeviceConnected = true;
-					countDownLatch.countDown();
+					mConnectionCountDownLatch.countDown();
+					break;
 				default:
+					Log.d(TAG, "Gatt state: not connected");
+
 					mDeviceConnected = false;
+					break;
 
 			}
 		}
@@ -158,7 +189,8 @@ public class BLECommunicationManager
 		@Override
 		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
 		{
-			countDownLatch.countDown();
+			Log.d(TAG, "Write successful: " + Arrays.toString(characteristic.getValue()));
+			mWriteCountdownLatch.countDown();
 		}
 	};
 }

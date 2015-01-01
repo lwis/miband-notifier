@@ -45,7 +45,9 @@ public class NotificationService extends NotificationListenerService
 			Long duration = intent.getLongExtra("duration", 100);
 			try
 			{
+				mBLEComms.connect();
 				vibrate(duration);
+				mBLEComms.disconnectGatt();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -61,7 +63,10 @@ public class NotificationService extends NotificationListenerService
 		{
 			try
 			{
+				mBLEComms.connect();
 				reboot();
+				mBLEComms.disconnectGatt();
+
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -81,7 +86,9 @@ public class NotificationService extends NotificationListenerService
 
 			try
 			{
+				mBLEComms.connect();
 				setColor((byte) red, (byte) green, (byte) blue, true);
+				mBLEComms.disconnectGatt();
 			}
 			catch(MiBandConnectFailureException e)
 			{
@@ -130,7 +137,7 @@ public class NotificationService extends NotificationListenerService
 	public void onCreate()
 	{
 		super.onCreate();
-		Log.i(TAG, "Starting service.");
+		Log.d(TAG, "Starting service.");
 
 		try
 		{
@@ -149,7 +156,6 @@ public class NotificationService extends NotificationListenerService
 		}
 
 		mBLEComms = new BLECommunicationManager(this);
-		mBLEComms.setupBluetooth();
 
 		pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
@@ -162,7 +168,7 @@ public class NotificationService extends NotificationListenerService
 		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 		registerReceiver(bluetoothStatusChangeReceiver, filter);
 
-		Log.i(TAG, "Started service.");
+		Log.d(TAG, "Started service.");
 	}
 
 	@Override
@@ -172,6 +178,7 @@ public class NotificationService extends NotificationListenerService
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mVibrateReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRebootReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mColourReceiver);
+		unregisterReceiver(bluetoothStatusChangeReceiver);
 
 		mBLEComms.disconnectGatt();
 	}
@@ -195,10 +202,6 @@ public class NotificationService extends NotificationListenerService
 	{
 		final boolean timeResult = isInPeriod(startTime, endTime) || lightsOutsidePeriod;
 		final boolean rNIResult = !requiresNonInteractive || !pm.isInteractive();
-
-		Log.i(TAG, "" + timeResult);
-		Log.i(TAG, "" + rNIResult);
-
 		return timeResult && rNIResult;
 	}
 
@@ -222,10 +225,12 @@ public class NotificationService extends NotificationListenerService
 						application.ismLightsOnlyOutsideOfPeriod())
 						|| userPreferences.ismNotifyAllApps())
 				{
-					Log.i(TAG, "Processing notification.");
+					Log.d(TAG, "Processing notification.");
 
 					if(sbn.isClearable())
 					{
+						mBLEComms.connect();
+
 						Notification mNotification = sbn.getNotification();
 						Bundle extras = mNotification.extras;
 
@@ -270,11 +275,12 @@ public class NotificationService extends NotificationListenerService
 			}
 			finally
 			{
-				Log.i(TAG, "Processed notification.");
+				mBLEComms.disconnectGatt();
 				if(wl != null)
 				{
 					wl.release();
 				}
+				Log.d(TAG, "Processed notification.");
 			}
 		}
 	}
