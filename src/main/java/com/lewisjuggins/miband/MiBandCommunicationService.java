@@ -29,20 +29,26 @@ public class MiBandCommunicationService extends Service
 
 			try
 			{
-				if(mBLEComms.mDeviceConnected)
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 				{
-					vibrate(duration);
-				}
-				else
-				{
-					mBLEComms.connectGatt();
-					vibrate(duration);
-					mBLEComms.disconnectGatt();
+					if(mBLEComms.mDeviceConnected)
+					{
+						vibrate(duration);
+					}
+					else
+					{
+						mBLEComms.connectGatt();
+						vibrate(duration);
+					}
 				}
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				//ignore.
+			}
+			finally
+			{
+				mBLEComms.disconnectGatt();
 			}
 		}
 	};
@@ -54,49 +60,54 @@ public class MiBandCommunicationService extends Service
 		{
 			try
 			{
-				if(mBLEComms.mDeviceConnected)
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 				{
-					reboot();
-				}
-				else
-				{
-					mBLEComms.connectGatt();
-					reboot();
-					mBLEComms.disconnectGatt();
+					if(mBLEComms.mDeviceConnected)
+					{
+						reboot();
+					}
+					else
+					{
+						mBLEComms.connectGatt();
+						reboot();
+					}
 				}
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				//ignore.
+			}
+			finally
+			{
+				mBLEComms.disconnectGatt();
 			}
 		}
 	};
 
-	private BroadcastReceiver mFlashColourReceiver = new BroadcastReceiver()
+	private BroadcastReceiver mBandNotificationReceiver = new BroadcastReceiver()
 	{
 		@Override
 		public void onReceive(Context context, Intent intent)
 		{
+			final int vibrateTimes = intent.getIntExtra("vibrateTimes", 1);
+			final long vibrateDuration = intent.getLongExtra("vibrateDuration", 250L);
+			final int flashTimes = intent.getIntExtra("flashTimes", 1);
 			final int flashColour = intent.getIntExtra("flashColour", 0xFFFFFFFF);
-			final int bandColour = intent.getIntExtra("bandColour", 0xFFFFFFFF);
+			final int originalColour = intent.getIntExtra("originalColour", 0xFFFFFFFF);
 			final long flashDuration = intent.getLongExtra("flashDuration", 250L);
 
 			try
 			{
-				if(mBLEComms.mDeviceConnected)
-				{
-					flashBandLights(flashColour, bandColour, flashDuration);
-				}
-				else
-				{
-					mBLEComms.connectGatt();
-					flashBandLights(flashColour, bandColour, flashDuration);
-					mBLEComms.disconnectGatt();
-				}
+				mBLEComms.connectGatt();
+				notifyBand(vibrateDuration, vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				//ignore.
+			}
+			finally
+			{
+				mBLEComms.disconnectGatt();
 			}
 		}
 	};
@@ -112,46 +123,27 @@ public class MiBandCommunicationService extends Service
 
 			try
 			{
-				if(mBLEComms.mDeviceConnected)
+				if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 				{
-					setColor((byte) red, (byte) green, (byte) blue, true);
-				}
-				else
-				{
-					mBLEComms.connectGatt();
-					setColor((byte) red, (byte) green, (byte) blue, true);
-					mBLEComms.disconnectGatt();
+					if(mBLEComms.mDeviceConnected)
+					{
+						setColor((byte) red, (byte) green, (byte) blue, true);
+					}
+					else
+					{
+						mBLEComms.connectGatt();
+						setColor((byte) red, (byte) green, (byte) blue, true);
+					}
 				}
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				//ignore.
 			}
-		}
-	};
-
-	private BroadcastReceiver mConnectReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context context, Intent intent)
-		{
-			try
+			finally
 			{
-				mBLEComms.connectGatt();
+				mBLEComms.disconnectGatt();
 			}
-			catch(MiBandConnectFailureException e)
-			{
-				//ignore.
-			}
-		}
-	};
-
-	private BroadcastReceiver mDisconnectReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context context, Intent intent)
-		{
-			mBLEComms.disconnectGatt();
 		}
 	};
 
@@ -188,9 +180,7 @@ public class MiBandCommunicationService extends Service
 		LocalBroadcastManager.getInstance(this).registerReceiver(mVibrateReceiver, new IntentFilter("vibrate"));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRebootReceiver, new IntentFilter("reboot"));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mColourReceiver, new IntentFilter("colour"));
-		LocalBroadcastManager.getInstance(this).registerReceiver(mFlashColourReceiver, new IntentFilter("flashBandLights"));
-		LocalBroadcastManager.getInstance(this).registerReceiver(mConnectReceiver, new IntentFilter("connect"));
-		LocalBroadcastManager.getInstance(this).registerReceiver(mDisconnectReceiver, new IntentFilter("disconnect"));
+		LocalBroadcastManager.getInstance(this).registerReceiver(mBandNotificationReceiver, new IntentFilter("notifyBand"));
 
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
@@ -204,9 +194,7 @@ public class MiBandCommunicationService extends Service
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mVibrateReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mRebootReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mColourReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mFlashColourReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mConnectReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mDisconnectReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mBandNotificationReceiver);
 
 		unregisterReceiver(bluetoothStatusChangeReceiver);
 
@@ -234,7 +222,7 @@ public class MiBandCommunicationService extends Service
 	private void startVibrate()
 	{
 		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-		controlPoint.setValue(new byte[]{ (byte) 8, (byte) 2 });
+		controlPoint.setValue(new byte[]{ (byte) 8, (byte) 1 });
 		mBLEComms.write(controlPoint);
 	}
 
@@ -245,8 +233,7 @@ public class MiBandCommunicationService extends Service
 		mBLEComms.write(controlPoint);
 	}
 
-	private synchronized void vibrate(final long duration)
-			throws MiBandConnectFailureException
+	private void vibrate(final long duration)
 	{
 		startVibrate();
 		threadWait(duration);
@@ -254,7 +241,6 @@ public class MiBandCommunicationService extends Service
 	}
 
 	private void reboot()
-			throws MiBandConnectFailureException
 	{
 		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 		controlPoint.setValue(new byte[]{ 12 });
@@ -262,7 +248,6 @@ public class MiBandCommunicationService extends Service
 	}
 
 	private void setColor(byte r, byte g, byte b, boolean display)
-			throws MiBandConnectFailureException
 	{
 		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
 		controlPoint.setValue(new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 });
@@ -278,14 +263,21 @@ public class MiBandCommunicationService extends Service
 		return new byte[]{ (byte) red, (byte) green, (byte) blue };
 	}
 
-	private synchronized void flashBandLights(int flashColour, int originalColour, long duration)
+	private synchronized void notifyBand(long vibrateDuration, int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
 			throws MiBandConnectFailureException
 	{
 		final byte[] flashColours = convertRgb(flashColour);
 		final byte[] originalColours = convertRgb(originalColour);
 
-		setColor(flashColours[0], flashColours[1], flashColours[2], true);
-		threadWait(duration);
-		setColor(originalColours[0], originalColours[1], originalColours[2], false);
+		for(int i = 1; i <= vibrateTimes; i++)
+		{
+			vibrate(vibrateDuration);
+		}
+		for(int i = 1; i <= flashTimes; i++)
+		{
+			setColor(flashColours[0], flashColours[1], flashColours[2], true);
+			threadWait(flashDuration);
+			setColor(originalColours[0], originalColours[1], originalColours[2], false);
+		}
 	}
 }

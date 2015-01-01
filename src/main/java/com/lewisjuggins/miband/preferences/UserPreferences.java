@@ -27,8 +27,6 @@ public class UserPreferences
 
 	private int mBandColour = 0xFFFFFFFF;
 
-	private boolean mNotifyAllApps = false;
-
 	private static UserPreferences INSTANCE;
 
 	//This should never be invoked, but is required for Gson instantiation.
@@ -113,11 +111,6 @@ public class UserPreferences
 	public void removeApp(String key)
 	{
 		mAppsToNotify.remove(key);
-	}
-
-	public boolean ismNotifyAllApps()
-	{
-		return mNotifyAllApps;
 	}
 
 	public int getmBandColour()

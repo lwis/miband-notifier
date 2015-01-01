@@ -1,7 +1,7 @@
 package com.lewisjuggins.miband;
 
 import android.app.Notification;
-import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -106,9 +106,7 @@ public class NotificationService extends NotificationListenerService
 
 		final LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
 
-		final BluetoothManager mBluetoothManager = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
-
-		if(mBluetoothManager != null)
+		if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 		{
 			PowerManager.WakeLock wl = null;
 			try
@@ -119,51 +117,39 @@ public class NotificationService extends NotificationListenerService
 				final UserPreferences userPreferences = UserPreferences.getInstance();
 				final Application application = userPreferences.getApp(sbn.getPackageName());
 
-				if(application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
-						application.ismLightsOnlyOutsideOfPeriod())
-						|| userPreferences.ismNotifyAllApps())
+				if((application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
+						application.ismLightsOnlyOutsideOfPeriod())))
 				{
 					Log.d(TAG, "Processing notification.");
 
 					if(sbn.isClearable())
 					{
-						lbm.sendBroadcastSync(new Intent("connect"));
+						final Notification mNotification = sbn.getNotification();
+						final Bundle extras = mNotification.extras;
 
-						Notification mNotification = sbn.getNotification();
-						Bundle extras = mNotification.extras;
-
-						Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
+						final Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
 						if(bitmap != null)
 						{
 							Palette palette = Palette.generate(bitmap, 1);
 							Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
 						}
 
-						boolean vibrate = true;
+						final int vibrateTimes = !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod() ? 0 : application.getmVibrateTimes();
+						final long vibrateDuration = application.getmVibrateDuration();
+						final int flashTimes = application.getmBandColourTimes();
+						final int flashColour = application.getmBandColour();
+						final int originalColour = userPreferences.getmBandColour();
+						final long flashDuration = application.getmBandColourDuration();
 
-						if(application != null && !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod())
-						{
-							vibrate = false;
-						}
+						final Intent notifyIntent = new Intent("notifyBand");
+						notifyIntent.putExtra("vibrateTimes", vibrateTimes);
+						notifyIntent.putExtra("vibrateDuration", vibrateDuration);
+						notifyIntent.putExtra("flashTimes", flashTimes);
+						notifyIntent.putExtra("flashColour", flashColour);
+						notifyIntent.putExtra("originalColour", originalColour);
+						notifyIntent.putExtra("flashDuration", flashDuration);
 
-						if(vibrate)
-						{
-							for(int i = 1; i <= (application != null ? application.getmVibrateTimes() : 1); i++)
-							{
-								final Intent vibrateIntent = new Intent("vibrate");
-								vibrateIntent.putExtra("duration", application != null ? application.getmVibrateDuration() : 250L);
-								lbm.sendBroadcastSync(vibrateIntent);
-							}
-						}
-
-						for(int i = 1; i <= (application != null ? application.getmBandColourTimes() : 1); i++)
-						{
-							final Intent vibrateIntent = new Intent("flashBandLights");
-							vibrateIntent.putExtra("flashColour", application != null ? application.getmBandColour() : 0xFFFFFFFF);
-							vibrateIntent.putExtra("bandColour", userPreferences.getmBandColour());
-							vibrateIntent.putExtra("flashDuration", application != null ? application.getmBandColourDuration() : 250L);
-							lbm.sendBroadcastSync(vibrateIntent);
-						}
+						lbm.sendBroadcast(notifyIntent);
 					}
 				}
 			}
@@ -173,7 +159,6 @@ public class NotificationService extends NotificationListenerService
 			}
 			finally
 			{
-				lbm.sendBroadcast(new Intent("disconnect"));
 				if(wl != null)
 				{
 					wl.release();

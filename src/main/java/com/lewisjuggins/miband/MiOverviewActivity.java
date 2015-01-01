@@ -229,6 +229,8 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		super.onCreate(savedInstanceState);
 
+		getActionBar().hide();
+
 		final Intent serviceIntent = new Intent(this, MiBandCommunicationService.class);
 		startService(serviceIntent);
 
@@ -244,8 +246,6 @@ public class MiOverviewActivity extends Activity implements Observer
 		userPreferences = UserPreferences.getInstance();
 
 		mMiBand.addObserver(this);
-
-		getActionBar().hide();
 
 		setContentView(R.layout.activity_mi_overview);
 
@@ -277,7 +277,6 @@ public class MiOverviewActivity extends Activity implements Observer
 				return ((Application) lhs).getmAppName().compareTo(((Application) rhs).getmAppName());
 			}
 		});
-
 
 		mAppArrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, appArray);
 		mListView = ((ListView) findViewById(R.id.listView));
@@ -320,7 +319,7 @@ public class MiOverviewActivity extends Activity implements Observer
 						{
 							public void onClick(DialogInterface dialog, int id)
 							{
-								finish();
+								dialog.dismiss();
 							}
 						})
 				.create().show();

@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.util.Log;
@@ -57,12 +56,11 @@ public class BLECommunicationManager
 	{
 		Log.d(TAG, "Initialising Bluetooth connection");
 
-		final BluetoothManager mBluetoothManager = ((BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE));
 
-		if(mBluetoothAdapterStatus || mBluetoothManager != null)
+		if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 		{
 			attempts += 1;
-			final BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
+			final BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 			final Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
 			for(BluetoothDevice pairedDevice : pairedDevices)
@@ -196,7 +194,6 @@ public class BLECommunicationManager
 
 					mDeviceConnected = false;
 					break;
-
 			}
 		}
 
