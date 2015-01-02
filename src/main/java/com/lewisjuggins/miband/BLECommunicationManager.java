@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.util.Log;
 import com.lewisjuggins.miband.bluetooth.AsyncBluetoothGatt;
+import org.jdeferred.DoneCallback;
 
 import java.util.Set;
 import java.util.UUID;
@@ -47,6 +48,8 @@ public class BLECommunicationManager
 		connInt: 123ms
 		advInt: 1500ms
 	 */
+
+	public byte[] mCurrentLeParams;
 
 	public static final byte[] mLowLatencyLeParams = new byte[]{0x27, 0x00, 0x31, 0x00, 0x00, 0x00, (byte)0xf4, 0x01, 0x00, 0x00, 0x00, 0x00};
 
@@ -134,6 +137,14 @@ public class BLECommunicationManager
 		{
 			mGatt.connect().waitSafely(10000);
 			mGatt.discoverServices().waitSafely(10000);
+			mGatt.readCharacteristic(getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS)).done(new DoneCallback<BluetoothGattCharacteristic>()
+			{
+				@Override public void onDone(final BluetoothGattCharacteristic result)
+				{
+					mCurrentLeParams = result.getValue();
+					Log.i(TAG, "Read LE Params");
+				}
+			}).waitSafely();
 			setLowLatency();
 		}
 		catch(InterruptedException e)
@@ -149,9 +160,18 @@ public class BLECommunicationManager
 	{
 		if(mGatt != null)
 		{
-			//setMediumLatency();
-			mGatt.disconnect();
-			mGatt.close();
+			try
+			{
+				final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
+				characteristic.setValue(mCurrentLeParams);
+				mGatt.writeCharacteristic(characteristic).waitSafely();
+				mGatt.disconnect();
+				mGatt.close();
+			}
+			catch(InterruptedException e)
+			{
+				Log.d(TAG, "Failed to disconnect");
+			}
 		}
 	}
 
@@ -174,21 +194,6 @@ public class BLECommunicationManager
 		{
 			final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
 			characteristic.setValue(mLowLatencyLeParams);
-			mGatt.writeCharacteristic(characteristic).waitSafely();
-		}
-		catch(InterruptedException e)
-		{
-			Log.i(TAG, e.toString());
-			setLowLatency();
-		}
-	}
-
-	public void setHighLatency()
-	{
-		try
-		{
-			final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
-			characteristic.setValue(mHighLatencyLeParams);
 			mGatt.writeCharacteristic(characteristic).waitSafely();
 		}
 		catch(InterruptedException e)
