@@ -266,6 +266,7 @@ public class MiBandCommunicationService extends Service
 	private synchronized void notifyBand(long vibrateDuration, int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
 			throws MiBandConnectFailureException
 	{
+
 		final byte[] flashColours = convertRgb(flashColour);
 		final byte[] originalColours = convertRgb(originalColour);
 
