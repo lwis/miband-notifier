@@ -5,17 +5,10 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}">
 
-    <Button
-        android:id="@+id/vibrateButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vibrate" />
-
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="460dp"
-        android:layout_marginTop="50dp"
+        android:layout_height="match_parent"
         android:longClickable="true" />
 
     <com.melnykov.fab.FloatingActionButton
@@ -27,21 +20,7 @@
         android:src="@drawable/ic_content_add"
         fab:fab_colorNormal="#636363"
         fab:fab_colorPressed="#3B3B3B"
-        fab:fab_colorRipple="#575757" />
-
-    <Button
-        android:id="@+id/colourButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set colour"
-        android:layout_gravity="center_horizontal|top" />
-
-    <Button
-        android:id="@+id/rebootButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reboot"
-        android:layout_gravity="right|top" />
+        fab:fab_colorRipple="#ffaeaeae" />
 
 
 </FrameLayout>

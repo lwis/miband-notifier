@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -45,77 +46,40 @@ public class MiOverviewActivity extends Activity implements Observer
 
 	private ListView mListView;
 
-	private View.OnClickListener mVibrateButtonListener = new View.OnClickListener()
+	private class AddDialog extends AlertDialog
 	{
-		public void onClick(View v)
+		protected AddDialog(Context context)
 		{
-			vibrate(50L);
-		}
-	};
+			super(context);
 
-	private View.OnClickListener mRebootButtonListener = new View.OnClickListener()
-	{
-		public void onClick(View v)
-		{
-			reboot();
-		}
-	};
+			setTitle("Select an app");
 
-	private View.OnClickListener mColourSetButtonListener = new View.OnClickListener()
-	{
-		public void onClick(View v)
-		{
-			new ColorPickerDialog(MiOverviewActivity.this, userPreferences.getmBandColour(), new ColorPickerDialog.OnColorSelectedListener()
+			final ApplicationArrayAdapter arrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, getApps());
+			final ListView listView = new ListView(getContext());
+			setView(listView);
+			listView.setAdapter(arrayAdapter);
+			listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
 			{
-				@Override public void onColorSelected(int rgb)
+				@Override public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id)
 				{
-					Log.i(TAG, "" + rgb);
-					final int red = ((rgb >> 16) & 0x0ff) / 42;
-					final int green = ((rgb >> 8) & 0x0ff) / 42;
-					final int blue = ((rgb) & 0x0ff) / 42;
+					Application application = arrayAdapter.getItem(position);
 
-					setColour(red, green, blue);
-					userPreferences.setmBandColour(rgb);
-					userPreferences.savePreferences(getPreferencesOutputStream());
+					Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
+					intent.putExtra("packageName", application.getmPackageName());
+					intent.putExtra("isNew", true);
+					startActivity(intent);
 				}
-			}).show();
+			});
 		}
 	};
+
+	private AddDialog addDialog;
 
 	private View.OnClickListener mAddButtonListener = new View.OnClickListener()
 	{
 		public void onClick(View v)
 		{
-			AlertDialog.Builder builderSingle = new AlertDialog.Builder(
-					MiOverviewActivity.this);
-			builderSingle.setTitle("Select an app");
-
-			builderSingle.setNegativeButton("Cancel",
-					new DialogInterface.OnClickListener()
-					{
-						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
-							dialog.dismiss();
-						}
-					});
-			final ApplicationArrayAdapter arrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, getApps());
-			builderSingle.setAdapter(arrayAdapter,
-					new DialogInterface.OnClickListener()
-					{
-
-						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
-							Application application = arrayAdapter.getItem(which);
-
-							Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
-							intent.putExtra("packageName", application.getmPackageName());
-							intent.putExtra("isNew", true);
-							startActivity(intent);
-						}
-					});
-			builderSingle.show();
+			addDialog.show();
 		}
 	};
 
@@ -229,8 +193,6 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		super.onCreate(savedInstanceState);
 
-		getActionBar().hide();
-
 		final Intent serviceIntent = new Intent(this, MiBandCommunicationService.class);
 		startService(serviceIntent);
 
@@ -249,9 +211,6 @@ public class MiOverviewActivity extends Activity implements Observer
 
 		setContentView(R.layout.activity_mi_overview);
 
-		findViewById(R.id.vibrateButton).setOnClickListener(mVibrateButtonListener);
-		findViewById(R.id.rebootButton).setOnClickListener(mRebootButtonListener);
-		findViewById(R.id.colourButton).setOnClickListener(mColourSetButtonListener);
 		findViewById(R.id.fab).setOnClickListener(mAddButtonListener);
 
 		final List<Application> appArray = userPreferences.getAppArray();
@@ -286,6 +245,8 @@ public class MiOverviewActivity extends Activity implements Observer
 
 		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 		fab.attachToListView(mListView);
+
+		addDialog = new AddDialog(this);
 	}
 
 	@Override
@@ -329,6 +290,7 @@ public class MiOverviewActivity extends Activity implements Observer
 	public void onPause()
 	{
 		super.onPause();
+		addDialog.dismiss();
 	}
 
 	@Override
@@ -336,6 +298,35 @@ public class MiOverviewActivity extends Activity implements Observer
 	{
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_overview, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_vibrate:
+				vibrate(50L);
+				break;
+			case R.id.action_ledcolor:
+				new ColorPickerDialog(MiOverviewActivity.this, userPreferences.getmBandColour(), new ColorPickerDialog.OnColorSelectedListener()
+				{
+					@Override public void onColorSelected(int rgb)
+					{
+						Log.i(TAG, "" + rgb);
+						final int red = ((rgb >> 16) & 0x0ff) / 42;
+						final int green = ((rgb >> 8) & 0x0ff) / 42;
+						final int blue = ((rgb) & 0x0ff) / 42;
+
+						setColour(red, green, blue);
+						userPreferences.setmBandColour(rgb);
+						userPreferences.savePreferences(getPreferencesOutputStream());
+					}
+				}).show();
+				break;
+			case R.id.action_reboot:
+				reboot();
+				break;
+		}
 		return true;
 	}
 
@@ -348,7 +339,10 @@ public class MiOverviewActivity extends Activity implements Observer
 
 		for(ApplicationInfo packageInfo : packages)
 		{
-			toRet.add(new Application(packageInfo.packageName, pm.getApplicationLabel(packageInfo).toString()));
+			if(userPreferences.getApp(packageInfo.packageName) == null)
+			{
+				toRet.add(new Application(packageInfo.packageName, pm.getApplicationLabel(packageInfo).toString()));
+			}
 		}
 
 		Collections.sort(toRet, new Comparator()
@@ -356,7 +350,7 @@ public class MiOverviewActivity extends Activity implements Observer
 			@Override
 			public int compare(Object lhs, Object rhs)
 			{
-				return ((Application) lhs).getmAppName().compareTo(((Application) rhs).getmAppName());
+				return ((Application) lhs).getmAppName().compareToIgnoreCase(((Application) rhs).getmAppName());
 			}
 		});
 		return toRet;

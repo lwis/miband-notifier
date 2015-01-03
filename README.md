@@ -6,18 +6,24 @@ This app currently only works with the Xiaomi Mi Band, and requires the main app
 
 The app currently only works with Lollipop due to significant incompatible changes in the Bluetooth stack, there are no immediate plans to change this.
 
+Disclaimer: This app includes no warranty for your device, in my testing I've never bricked my band - but as I'm reverse engineering their API, it's entirely possible, albeit unlikely.
+
+
+
 ##Todo:
 
 - Notification rate limiting, a queue may be appropriate here
+    - New flag to not remove from queue if notification should be sent on reconnection with device
+- Implement way to dynamically setup 'actions' to add to the queue for each app
+    - For example, Vibrate for 100ms then flash for 50ms, then vibrate again for 200ms
 - Option for only in 'Priority'/'None' modes.
 - App icon
 - Improve app list display
 - Improve time pickers
-- Improve Bluetooth connection reliability
+- Improve Bluetooth failure reconnection reliability
 - Better handling of no paired Mi Band
-- Debug why the vibration duration can be quite inconsistent (requiring a band restart)
-    - I think this is due to the poor Android Bluetooth stack
-- Separate service for Bluetooth communications, using broadcasts to communicate between services/activities?
+- The band takes longer than the writes to adjust it's LE connection after setting the params, so they are effectively moot
+    - A change listener may be appropriate here
 - Tests
 
 ##Future:
