@@ -2,6 +2,7 @@ package com.lewisjuggins.miband;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -253,6 +254,12 @@ public class MiOverviewActivity extends Activity implements Observer
 	public void onResume()
 	{
 		super.onResume();
+
+		if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, 1);
+		}
+
 		boolean isEnabledNLS = isEnabled();
 		if(!isEnabledNLS)
 		{

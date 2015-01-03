@@ -402,7 +402,7 @@ public class AsyncBluetoothGatt extends BluetoothGattCallback {
 	public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 		super.onConnectionStateChange(gatt, status, newState);
 		// TODO Check gatt passed in equals the expected gatt?
-		if (newState == BluetoothGatt.STATE_CONNECTED && connect != null) {
+		if (newState == BluetoothGatt.STATE_CONNECTED && connect != null && !connect.isResolved()) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				connect.resolve(null);
 			}
@@ -410,7 +410,7 @@ public class AsyncBluetoothGatt extends BluetoothGattCallback {
 				connect.reject(status);
 			}
 		}
-		else if (newState == BluetoothGatt.STATE_DISCONNECTED && disconnect != null) {
+		else if (newState == BluetoothGatt.STATE_DISCONNECTED && disconnect != null && !disconnect.isResolved()) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				disconnect.resolve(null);
 			}

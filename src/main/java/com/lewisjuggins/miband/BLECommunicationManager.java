@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.util.Log;
 import com.lewisjuggins.miband.bluetooth.AsyncBluetoothGatt;
-import org.jdeferred.DoneCallback;
 
 import java.util.Set;
 import java.util.UUID;
@@ -61,7 +60,7 @@ public class BLECommunicationManager
 
 	private AsyncBluetoothGatt mGatt;
 
-	public boolean mDeviceConnected = false;
+	private boolean mDeviceConnected = false;
 
 	private final Context mContext;
 
@@ -105,6 +104,15 @@ public class BLECommunicationManager
 				setupComplete = true;
 				mBluetoothAdapterStatus = true;
 
+				try
+				{
+					connectGatt();
+				}
+				catch(MiBandConnectFailureException e)
+				{
+					Log.w(TAG, "Could not connect to Mi Band");
+				}
+
 				Log.d(TAG, "Initialising Bluetooth connection complete");
 			}
 			else
@@ -126,81 +134,100 @@ public class BLECommunicationManager
 		}
 	}
 
-	public synchronized void connectGatt()
+	private synchronized void connectGatt()
 		throws MiBandConnectFailureException
 	{
 		Log.d(TAG, "Establishing connection to gatt");
 
 		mGatt = new AsyncBluetoothGatt(mBluetoothMi, mContext, true);
 
+		//TODO: Register for connection state change.
 		try
 		{
 			mGatt.connect().waitSafely(10000);
 			mGatt.discoverServices().waitSafely(10000);
-			mGatt.readCharacteristic(getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS)).done(new DoneCallback<BluetoothGattCharacteristic>()
-			{
-				@Override public void onDone(final BluetoothGattCharacteristic result)
-				{
-					mCurrentLeParams = result.getValue();
-					Log.i(TAG, "Read LE Params");
-				}
-			}).waitSafely();
-			setLowLatency();
+			mDeviceConnected = true;
+			Log.d(TAG, "Established connection to gatt");
 		}
 		catch(InterruptedException e)
 		{
-			Log.d(TAG, "Failed to connect to gatt");
+			mDeviceConnected = false;
+			Log.i(TAG, "Failed to connect to gatt, timeout");
 			throw new MiBandConnectFailureException("Failed to connect");
 		}
-
-		Log.d(TAG, "Established connection to gatt");
 	}
 
 	public synchronized void disconnectGatt()
 	{
 		if(mGatt != null)
 		{
-			try
-			{
-				final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
-				characteristic.setValue(mCurrentLeParams);
-				mGatt.writeCharacteristic(characteristic).waitSafely();
+			//try
+			//{
+				//final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
+				//characteristic.setValue(mCurrentLeParams);
+				//mGatt.writeCharacteristic(characteristic).waitSafely();
 				mGatt.disconnect();
 				mGatt.close();
-			}
-			catch(InterruptedException e)
-			{
-				Log.d(TAG, "Failed to disconnect");
-			}
+//			}
+//			catch(InterruptedException e)
+//			{
+//				Log.d(TAG, "Failed to disconnect");
+//			}
 		}
 	}
 
 	public synchronized void write(final BluetoothGattCharacteristic characteristic)
+		throws MiBandConnectFailureException
 	{
-		try
+		if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 		{
-			mGatt.writeCharacteristic(characteristic).waitSafely();
+			if(mDeviceConnected)
+			{
+				try
+				{
+					Log.i(TAG, "Writing!");
+					mGatt.writeCharacteristic(characteristic).waitSafely(2000);
+				}
+				catch(InterruptedException e)
+				{
+					Log.i(TAG, "Failed to write, timeout");
+				}
+			}
+			else
+			{
+				Log.d(TAG, "Device not connected, connecting");
+				connectGatt();
+				write(characteristic);
+			}
 		}
-		catch(InterruptedException e)
+		else
 		{
-			Log.i(TAG, e.toString());
-			write(characteristic);
+			Log.i(TAG, "Bluetooth not enabled, write failed");
 		}
 	}
 
 	public void setLowLatency()
+			throws MiBandConnectFailureException
 	{
-		try
-		{
+//		try
+//		{
+			//mGatt.readCharacteristic(getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS)).done(new DoneCallback<BluetoothGattCharacteristic>()
+			//{
+			//	@Override public void onDone(final BluetoothGattCharacteristic result)
+			//	{
+			//		mCurrentLeParams = result.getValue();
+			//		Log.i(TAG, "Read LE Params");
+			//	}
+			//}).waitSafely();
+
 			final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
 			characteristic.setValue(mLowLatencyLeParams);
-			mGatt.writeCharacteristic(characteristic).waitSafely();
-		}
-		catch(InterruptedException e)
-		{
-			Log.i(TAG, e.toString());
-			setLowLatency();
-		}
+			write(characteristic);
+//		}
+//		catch(InterruptedException e)
+//		{
+//			setLowLatency();
+//		}
 	}
 
 	private BluetoothGattService getMiliService()

@@ -149,7 +149,7 @@ public class NotificationService extends NotificationListenerService
 						notifyIntent.putExtra("originalColour", originalColour);
 						notifyIntent.putExtra("flashDuration", flashDuration);
 
-						lbm.sendBroadcast(notifyIntent);
+						lbm.sendBroadcastSync(notifyIntent);
 					}
 				}
 			}
