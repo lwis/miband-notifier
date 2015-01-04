@@ -77,12 +77,15 @@ public class NotificationService extends NotificationListenerService
 		super.onDestroy();
 	}
 
-	private boolean isInPeriod(final Date startTime, final Date endTime)
+	private boolean isInPeriod(Date startTime, Date endTime)
 	{
 		try
 		{
-			final DateFormat f = new SimpleDateFormat("HH:mm:ss");
+			//Clean the dates so they are only times, for comparison.
+			final DateFormat f = new SimpleDateFormat("HH:mm");
 			final Date now = f.parse(f.format(new Date()));
+			startTime = f.parse(f.format(startTime));
+			endTime = f.parse(f.format(endTime));
 			return ((now.after(startTime) && now.before(endTime)) || now.equals(startTime) || now.equals(endTime));
 		}
 		catch(ParseException e)

@@ -1,6 +1,7 @@
 package com.lewisjuggins.miband;
 
 import android.app.Activity;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -14,15 +15,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import com.lewisjuggins.miband.colorpicker.ColorPickerDialog;
 import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 
 import java.io.FileNotFoundException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Lewis on 30/12/14.
@@ -33,7 +35,7 @@ public class AppPreferenceActivity extends Activity
 
 	private Application mApplication;
 
-	private final DateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+	private final DateFormat formatter = new SimpleDateFormat("hh:mm aa");
 
 	private View.OnClickListener mDoneButtonListener = new View.OnClickListener()
 	{
@@ -48,10 +50,7 @@ public class AppPreferenceActivity extends Activity
 				final boolean noVibrate = ((CheckBox) findViewById(R.id.noVibrateCheckBox)).isChecked();
 				final boolean userNotPresent = ((CheckBox) findViewById(R.id.userNotPresentCheckBox)).isChecked();
 
-				final Date startTime = formatter.parse(((EditText) findViewById(R.id.startTimeTextField)).getText().toString());
-				final Date endTime = formatter.parse(((EditText) findViewById(R.id.endTimeTextField)).getText().toString());
-
-				mApplication.loadValues(vibrations, vibrationDuration, flashAmount, flashDuration, startTime, endTime, noVibrate, userNotPresent);
+				mApplication.loadValues(vibrations, vibrationDuration, flashAmount, flashDuration, noVibrate, userNotPresent);
 
 				UserPreferences userPreferences = UserPreferences.getInstance();
 				userPreferences.addOrUpdateAppEntry(mApplication);
@@ -60,7 +59,7 @@ public class AppPreferenceActivity extends Activity
 				Intent intent = new Intent(getApplicationContext(), MiOverviewActivity.class);
 				startActivity(intent);
 			}
-			catch (NumberFormatException | ParseException | FileNotFoundException e)
+			catch (NumberFormatException | FileNotFoundException e)
 			{
 				Log.e(TAG, e.toString());
 			}
@@ -111,8 +110,7 @@ public class AppPreferenceActivity extends Activity
 		final boolean isNew = getIntent().getBooleanExtra("isNew", false);
 		if(isNew)
 		{
-			mApplication = new Application();
-			mApplication.setmPackageName(packageName);
+			mApplication = new Application(packageName);
 		}
 		//Edit application route
 		else
@@ -125,9 +123,48 @@ public class AppPreferenceActivity extends Activity
 			((SeekBar) findViewById(R.id.flashDurationSeekBar)).setProgress((int)mApplication.getmBandColourDuration());
 			((CheckBox) findViewById(R.id.noVibrateCheckBox)).setChecked(mApplication.ismLightsOnlyOutsideOfPeriod());
 			((CheckBox) findViewById(R.id.userNotPresentCheckBox)).setChecked(mApplication.ismUserPresent());
-			((EditText) findViewById(R.id.startTimeTextField)).setText(formatter.format(mApplication.getmStartPeriod()));
-			((EditText) findViewById(R.id.endTimeTextField)).setText(formatter.format(mApplication.getmEndPeriod()));
 		}
+
+		((EditText) findViewById(R.id.startTimeTextField)).setText(formatter.format(mApplication.getmStartPeriod()));
+		((EditText) findViewById(R.id.endTimeTextField)).setText(formatter.format(mApplication.getmEndPeriod()));
+
+		findViewById(R.id.startTimeTextField).setOnClickListener(new View.OnClickListener()
+		{
+			@Override public void onClick(final View v)
+			{
+				TimePickerDialog dialog = new TimePickerDialog(AppPreferenceActivity.this, new TimePickerDialog.OnTimeSetListener()
+				{
+					@Override public void onTimeSet(final TimePicker view, final int hourOfDay, final int minute)
+					{
+						final GregorianCalendar calendar = new GregorianCalendar();
+						calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+						calendar.set(Calendar.MINUTE, minute);
+						((EditText)findViewById(R.id.startTimeTextField)).setText(formatter.format(calendar.getTime()));
+						mApplication.setmStartPeriod(calendar);
+					}
+				}, mApplication.getmStartPeriodCalendar().get(Calendar.HOUR_OF_DAY), mApplication.getmStartPeriodCalendar().get(Calendar.MINUTE), false);
+				dialog.show();
+			}
+		});
+
+		findViewById(R.id.endTimeTextField).setOnClickListener(new View.OnClickListener()
+		{
+			@Override public void onClick(final View v)
+			{
+				TimePickerDialog dialog = new TimePickerDialog(AppPreferenceActivity.this, new TimePickerDialog.OnTimeSetListener()
+				{
+					@Override public void onTimeSet(final TimePicker view, final int hourOfDay, final int minute)
+					{
+						final GregorianCalendar calendar = new GregorianCalendar();
+						calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+						calendar.set(Calendar.MINUTE, minute);
+						((EditText)findViewById(R.id.endTimeTextField)).setText(formatter.format(calendar.getTime()));
+						mApplication.setmEndPeriod(calendar);
+					}
+				}, mApplication.getmEndPeriodCalendar().get(Calendar.HOUR_OF_DAY), mApplication.getmEndPeriodCalendar().get(Calendar.MINUTE), false);
+				dialog.show();
+			}
+		});
 
 		findViewById(R.id.doneButton).setOnClickListener(mDoneButtonListener);
 		findViewById(R.id.colourButton).setOnClickListener(mColourSetButtonListener);

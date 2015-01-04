@@ -1,6 +1,8 @@
 package com.lewisjuggins.miband.preferences;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Lewis on 30/12/14.
@@ -19,9 +21,9 @@ public class Application
 
 	private int mBandColour = 0xFFFFFFFF;
 
-	private Date mStartPeriod;
+	private Calendar mStartPeriod;
 
-	private Date mEndPeriod;
+	private Calendar mEndPeriod;
 
 	private boolean mLightsOnlyOutsideOfPeriod;
 
@@ -34,23 +36,33 @@ public class Application
 
 	}
 
+	public Application(String packageName)
+	{
+		this.mPackageName = packageName;
+
+		mStartPeriod = new GregorianCalendar();
+		mEndPeriod = new GregorianCalendar();
+		mStartPeriod.set(Calendar.HOUR_OF_DAY, 8);
+		mStartPeriod.set(Calendar.MINUTE, 0);
+		mEndPeriod.set(Calendar.HOUR_OF_DAY, 22);
+		mEndPeriod.set(Calendar.MINUTE, 0);
+	}
+
 	public Application(String packageName, String applicationLabel)
 	{
 		this.mPackageName = packageName;
 		this.mAppName = applicationLabel;
 	}
 
-	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, Date mStartPeriod, Date mEndPeriod,
-			boolean mLightsOnlyOutsideOfPeriod, boolean mUserPresent)
+	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, boolean mLightsOnlyOutsideOfPeriod, boolean mUserPresent)
 	{
 		this.mVibrateTimes = mVibrateTimes;
 		this.mVibrateDuration = mVibrateDuration;
 		this.mBandColourTimes = mBandColourTimes;
 		this.mBandColourDuration = mBandColourDuration;
-		this.mStartPeriod = mStartPeriod;
-		this.mEndPeriod = mEndPeriod;
 		this.mLightsOnlyOutsideOfPeriod = mLightsOnlyOutsideOfPeriod;
 		this.mUserPresent = mUserPresent;
+
 	}
 
 	public boolean ismUserPresent()
@@ -125,20 +137,30 @@ public class Application
 
 	public Date getmStartPeriod()
 	{
+		return mStartPeriod.getTime();
+	}
+
+	public Calendar getmStartPeriodCalendar()
+	{
 		return mStartPeriod;
 	}
 
-	public void setmStartPeriod(Date mStartPeriod)
+	public void setmStartPeriod(Calendar mStartPeriod)
 	{
 		this.mStartPeriod = mStartPeriod;
 	}
 
 	public Date getmEndPeriod()
 	{
+		return mEndPeriod.getTime();
+	}
+
+	public Calendar getmEndPeriodCalendar()
+	{
 		return mEndPeriod;
 	}
 
-	public void setmEndPeriod(Date mEndPeriod)
+	public void setmEndPeriod(Calendar mEndPeriod)
 	{
 		this.mEndPeriod = mEndPeriod;
 	}

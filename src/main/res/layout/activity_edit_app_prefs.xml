@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:focusable="false">
 
 
     <TextView
@@ -134,8 +135,7 @@
         android:layout_below="@+id/flashDurationSeekBar"
         android:layout_marginTop="20dp"
         android:ems="10"
-        android:inputType="time"
-        android:text="08:00:00" />
+        android:focusable="false" />
 
     <TextView
         android:id="@+id/startPeriodLabel"
@@ -170,8 +170,7 @@
         android:layout_below="@+id/startTimeTextField"
         android:layout_marginTop="20dp"
         android:ems="10"
-        android:inputType="time"
-        android:text="22:00:00" />
+        android:focusable="false" />
 
     <CheckBox
         android:id="@+id/userNotPresentCheckBox"
