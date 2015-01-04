@@ -161,18 +161,8 @@ public class BLECommunicationManager
 	{
 		if(mGatt != null)
 		{
-			//try
-			//{
-				//final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
-				//characteristic.setValue(mCurrentLeParams);
-				//mGatt.writeCharacteristic(characteristic).waitSafely();
-				mGatt.disconnect();
-				mGatt.close();
-//			}
-//			catch(InterruptedException e)
-//			{
-//				Log.d(TAG, "Failed to disconnect");
-//			}
+			mGatt.disconnect();
+			mGatt.close();
 		}
 	}
 
@@ -209,25 +199,9 @@ public class BLECommunicationManager
 	public void setLowLatency()
 			throws MiBandConnectFailureException
 	{
-//		try
-//		{
-			//mGatt.readCharacteristic(getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS)).done(new DoneCallback<BluetoothGattCharacteristic>()
-			//{
-			//	@Override public void onDone(final BluetoothGattCharacteristic result)
-			//	{
-			//		mCurrentLeParams = result.getValue();
-			//		Log.i(TAG, "Read LE Params");
-			//	}
-			//}).waitSafely();
-
-			final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
-			characteristic.setValue(mLowLatencyLeParams);
-			write(characteristic);
-//		}
-//		catch(InterruptedException e)
-//		{
-//			setLowLatency();
-//		}
+		final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
+		characteristic.setValue(mLowLatencyLeParams);
+		write(characteristic);
 	}
 
 	private BluetoothGattService getMiliService()

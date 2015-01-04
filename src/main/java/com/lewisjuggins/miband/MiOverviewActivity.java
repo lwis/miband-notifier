@@ -55,7 +55,7 @@ public class MiOverviewActivity extends Activity implements Observer
 
 			setTitle("Select an app");
 
-			final ApplicationArrayAdapter arrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, getApps());
+			final ApplicationArrayAdapter arrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, R.layout.list_row_layout, getApps());
 			final ListView listView = new ListView(getContext());
 			setView(listView);
 			listView.setAdapter(arrayAdapter);
@@ -238,7 +238,7 @@ public class MiOverviewActivity extends Activity implements Observer
 			}
 		});
 
-		mAppArrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, android.R.layout.simple_list_item_1, appArray);
+		mAppArrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, R.layout.list_row_layout, appArray);
 		mListView = ((ListView) findViewById(R.id.listView));
 		mListView.setAdapter(mAppArrayAdapter);
 		mListView.setOnItemLongClickListener(mItemLongClickListerer);

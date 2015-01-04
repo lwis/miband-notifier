@@ -238,6 +238,7 @@ public class MiBandCommunicationService extends Service
 			setColor(flashColours[0], flashColours[1], flashColours[2], true);
 			threadWait(flashDuration);
 			setColor(originalColours[0], originalColours[1], originalColours[2], false);
+			threadWait(500L);
 		}
 	}
 }
