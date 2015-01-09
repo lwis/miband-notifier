@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -99,6 +100,10 @@ public class NotificationService extends NotificationListenerService
 	{
 		final boolean timeResult = isInPeriod(startTime, endTime) || lightsOutsidePeriod;
 		final boolean rNIResult = !requiresNonInteractive || !((PowerManager) getSystemService(Context.POWER_SERVICE)).isInteractive();
+
+		final boolean priorityActive = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getMode() == AudioManager.RINGER_MODE_SILENT;
+
+		Log.i(TAG, Boolean.toString(timeResult && rNIResult));
 		return timeResult && rNIResult;
 	}
 
@@ -109,13 +114,13 @@ public class NotificationService extends NotificationListenerService
 
 		final LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
 
+		final PowerManager.WakeLock wl = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
+		wl.acquire(20000);
+
 		if(BluetoothAdapter.getDefaultAdapter().isEnabled())
 		{
-			PowerManager.WakeLock wl = null;
 			try
 			{
-				wl = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
-				wl.acquire();
 
 				final UserPreferences userPreferences = UserPreferences.getInstance();
 				final Application application = userPreferences.getApp(sbn.getPackageName());
@@ -162,7 +167,7 @@ public class NotificationService extends NotificationListenerService
 			}
 			finally
 			{
-				if(wl != null)
+				if(wl.isHeld())
 				{
 					wl.release();
 				}

@@ -2,14 +2,24 @@ package com.lewisjuggins.miband;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
-import com.lewisjuggins.miband.bluetooth.AsyncBluetoothGatt;
+import com.lewisjuggins.miband.bluetooth.BLETask;
 
+import java.util.Arrays;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Lewis on 01/01/15.
@@ -58,7 +68,7 @@ public class BLECommunicationManager
 
 	private String mDeviceAddress;
 
-	private AsyncBluetoothGatt mGatt;
+	private BluetoothGatt mGatt;
 
 	private boolean mDeviceConnected = false;
 
@@ -72,6 +82,27 @@ public class BLECommunicationManager
 
 	private BluetoothGattCharacteristic mControlPointChar;
 
+	private CountDownLatch mWriteLatch;
+
+	private CountDownLatch mConnectionLatch;
+
+	private class Consumer implements Runnable
+	{
+		private Queue<BLETask> queue;
+
+		public Consumer(BlockingQueue queue)
+		{
+			this.queue = queue;
+		}
+
+		@Override public void run()
+		{
+			while(true)
+			{
+				queue.peek();
+			}
+		}
+	};
 
 	public BLECommunicationManager(final Context context)
 	{
@@ -139,14 +170,14 @@ public class BLECommunicationManager
 	{
 		Log.d(TAG, "Establishing connection to gatt");
 
-		mGatt = new AsyncBluetoothGatt(mBluetoothMi, mContext, true);
+		mGatt = mBluetoothMi.connectGatt(mContext, true, mGattCallback);
 
 		//TODO: Register for connection state change.
 		try
 		{
-			mGatt.connect().waitSafely(10000);
-			mGatt.discoverServices().waitSafely(10000);
-			mDeviceConnected = true;
+			mConnectionLatch = new CountDownLatch(2);
+			mGatt.connect();
+			mConnectionLatch.await(5, TimeUnit.SECONDS);
 			Log.d(TAG, "Established connection to gatt");
 		}
 		catch(InterruptedException e)
@@ -161,8 +192,15 @@ public class BLECommunicationManager
 	{
 		if(mGatt != null)
 		{
-			mGatt.disconnect();
-			mGatt.close();
+			new Handler(Looper.getMainLooper()).post(new Runnable()
+			{
+				@Override public void run()
+				{
+					mGatt.disconnect();
+					mGatt.close();
+					mGatt = null;
+				}
+			});
 		}
 	}
 
@@ -175,8 +213,10 @@ public class BLECommunicationManager
 			{
 				try
 				{
-					Log.i(TAG, "Writing!");
-					mGatt.writeCharacteristic(characteristic).waitSafely(2000);
+					Log.d(TAG, "Writing!");
+					mWriteLatch = new CountDownLatch(1);
+					mGatt.writeCharacteristic(characteristic);
+					mWriteLatch.await(2, TimeUnit.SECONDS);
 				}
 				catch(InterruptedException e)
 				{
@@ -192,16 +232,31 @@ public class BLECommunicationManager
 		}
 		else
 		{
-			Log.i(TAG, "Bluetooth not enabled, write failed");
+			Log.d(TAG, "Bluetooth not enabled, write failed");
 		}
 	}
 
-	public void setLowLatency()
+	private void setLowLatency()
 			throws MiBandConnectFailureException
 	{
 		final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
 		characteristic.setValue(mLowLatencyLeParams);
 		write(characteristic);
+		//TODO: This currently doesn't work, as the device doesn't react fast enough to change the connection before the next write.
+	}
+
+	public void setHighLatency()
+	{
+		try
+		{
+			final BluetoothGattCharacteristic characteristic = getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS);
+			characteristic.setValue(mHighLatencyLeParams);
+			write(characteristic);
+		}
+		catch(MiBandConnectFailureException ignored)
+		{
+
+		}
 	}
 
 	private BluetoothGattService getMiliService()
@@ -223,4 +278,44 @@ public class BLECommunicationManager
 
 		return getMiliService().getCharacteristic(uuid);
 	}
+
+	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback()
+	{
+
+		@Override
+		public void onServicesDiscovered(BluetoothGatt gatt, int status)
+		{
+			if(status == BluetoothGatt.GATT_SUCCESS)
+			{
+				mConnectionLatch.countDown();
+			}
+		}
+
+		@Override
+		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState)
+		{
+			mGatt = gatt;
+
+			switch(newState)
+			{
+				case BluetoothProfile.STATE_CONNECTED:
+					Log.d(TAG, "Gatt state: connected");
+					gatt.discoverServices();
+					mDeviceConnected = true;
+					mConnectionLatch.countDown();
+					break;
+				default:
+					Log.d(TAG, "Gatt state: not connected");
+					mDeviceConnected = false;
+					break;
+			}
+		}
+
+		@Override
+		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
+		{
+			Log.d(TAG, "Write successful: " + Arrays.toString(characteristic.getValue()));
+			mWriteLatch.countDown();
+		}
+	};
 }

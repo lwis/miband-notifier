@@ -71,7 +71,7 @@
         android:layout_alignTop="@+id/vibrationDurationLabel"
         android:max="500"
         android:minWidth="170dp"
-        android:progress="150" />
+        android:progress="200" />
 
     <TextView
         android:id="@+id/flashAmountLabel"

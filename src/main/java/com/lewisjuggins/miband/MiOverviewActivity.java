@@ -32,10 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
-public class MiOverviewActivity extends Activity implements Observer
+public class MiOverviewActivity extends Activity
 {
 	private final String TAG = this.getClass().getSimpleName();
 
@@ -208,8 +206,6 @@ public class MiOverviewActivity extends Activity implements Observer
 
 		userPreferences = UserPreferences.getInstance();
 
-		mMiBand.addObserver(this);
-
 		setContentView(R.layout.activity_mi_overview);
 
 		findViewById(R.id.fab).setOnClickListener(mAddButtonListener);
@@ -362,17 +358,4 @@ public class MiOverviewActivity extends Activity implements Observer
 		});
 		return toRet;
 	}
-
-	@Override
-	public void update(Observable observable, Object data)
-	{
-		runOnUiThread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-			}
-		});
-	}
-
 }

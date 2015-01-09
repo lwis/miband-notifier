@@ -6,8 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -37,6 +41,10 @@ public class AppPreferenceActivity extends Activity
 
 	private final DateFormat formatter = new SimpleDateFormat("hh:mm aa");
 
+	private Palette mPalette;
+
+	private int mColour;
+
 	private View.OnClickListener mDoneButtonListener = new View.OnClickListener()
 	{
 		public void onClick(View v)
@@ -50,7 +58,7 @@ public class AppPreferenceActivity extends Activity
 				final boolean noVibrate = ((CheckBox) findViewById(R.id.noVibrateCheckBox)).isChecked();
 				final boolean userNotPresent = ((CheckBox) findViewById(R.id.userNotPresentCheckBox)).isChecked();
 
-				mApplication.loadValues(vibrations, vibrationDuration, flashAmount, flashDuration, noVibrate, userNotPresent);
+				mApplication.loadValues(vibrations, vibrationDuration, flashAmount, flashDuration, noVibrate, userNotPresent, mColour);
 
 				UserPreferences userPreferences = UserPreferences.getInstance();
 				userPreferences.addOrUpdateAppEntry(mApplication);
@@ -70,11 +78,11 @@ public class AppPreferenceActivity extends Activity
 	{
 		public void onClick(View v)
 		{
-			new ColorPickerDialog(AppPreferenceActivity.this, mApplication.getmBandColour(), new ColorPickerDialog.OnColorSelectedListener()
+			new ColorPickerDialog(AppPreferenceActivity.this, mColour, new ColorPickerDialog.OnColorSelectedListener()
 			{
 				@Override public void onColorSelected(int rgb)
 				{
-					mApplication.setmBandColour(rgb);
+					mColour = rgb;
 				}
 			}).show();
 		}
@@ -83,7 +91,7 @@ public class AppPreferenceActivity extends Activity
 	@Override protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		getActionBar().hide();
+		//getActionBar().hide();
 
 		setContentView(R.layout.activity_edit_app_prefs);
 
@@ -93,13 +101,16 @@ public class AppPreferenceActivity extends Activity
 		final PackageManager pm = getPackageManager();
 		try
 		{
-			ApplicationInfo info = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+			final ApplicationInfo info = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
 
-			ImageView iconView = (ImageView) findViewById(R.id.iconView);
-			Drawable appIcon = pm.getApplicationIcon(info);
+			final ImageView iconView = (ImageView) findViewById(R.id.iconView);
+			final Drawable appIcon = pm.getApplicationIcon(info);
 			iconView.setImageDrawable(appIcon);
 
-			TextView appNameLabel = (TextView) findViewById(R.id.appNameLabel);
+			final Bitmap bitmap = ((BitmapDrawable) appIcon).getBitmap();
+			mPalette = Palette.generate(bitmap);
+
+			final TextView appNameLabel = (TextView) findViewById(R.id.appNameLabel);
 			appNameLabel.setText(pm.getApplicationLabel(info));
 		}
 		catch(PackageManager.NameNotFoundException e)
@@ -124,6 +135,8 @@ public class AppPreferenceActivity extends Activity
 			((CheckBox) findViewById(R.id.noVibrateCheckBox)).setChecked(mApplication.ismLightsOnlyOutsideOfPeriod());
 			((CheckBox) findViewById(R.id.userNotPresentCheckBox)).setChecked(mApplication.ismUserPresent());
 		}
+
+		mColour = mApplication.getmBandColour() != 0 ? mApplication.getmBandColour() : mPalette.getVibrantColor(mPalette.getDarkVibrantColor(Color.WHITE));
 
 		((EditText) findViewById(R.id.startTimeTextField)).setText(formatter.format(mApplication.getmStartPeriod()));
 		((EditText) findViewById(R.id.endTimeTextField)).setText(formatter.format(mApplication.getmEndPeriod()));

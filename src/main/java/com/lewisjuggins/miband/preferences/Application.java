@@ -19,7 +19,7 @@ public class Application
 
 	private long mBandColourDuration;
 
-	private int mBandColour = 0xFFFFFFFF;
+	private int mBandColour;
 
 	private Calendar mStartPeriod;
 
@@ -54,7 +54,7 @@ public class Application
 		this.mAppName = applicationLabel;
 	}
 
-	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, boolean mLightsOnlyOutsideOfPeriod, boolean mUserPresent)
+	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, boolean mLightsOnlyOutsideOfPeriod, boolean mUserPresent, int mBandColour)
 	{
 		this.mVibrateTimes = mVibrateTimes;
 		this.mVibrateDuration = mVibrateDuration;
@@ -62,7 +62,7 @@ public class Application
 		this.mBandColourDuration = mBandColourDuration;
 		this.mLightsOnlyOutsideOfPeriod = mLightsOnlyOutsideOfPeriod;
 		this.mUserPresent = mUserPresent;
-
+		this.mBandColour = mBandColour;
 	}
 
 	public boolean ismUserPresent()

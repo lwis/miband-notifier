@@ -29,12 +29,15 @@ public class MiBandCommunicationService extends Service
 
 			try
 			{
-				mBLEComms.setLowLatency();
 				vibrate(duration);
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to vibrate");
+			}
+			finally
+			{
+				mBLEComms.setHighLatency();
 			}
 		}
 	};
@@ -46,12 +49,15 @@ public class MiBandCommunicationService extends Service
 		{
 			try
 			{
-				mBLEComms.setLowLatency();
 				reboot();
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to reboot");
+			}
+			finally
+			{
+				mBLEComms.setHighLatency();
 			}
 		}
 	};
@@ -67,12 +73,15 @@ public class MiBandCommunicationService extends Service
 
 			try
 			{
-				mBLEComms.setLowLatency();
 				setColor((byte) red, (byte) green, (byte) blue, true);
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to set colour");
+			}
+			finally
+			{
+				mBLEComms.setHighLatency();
 			}
 		}
 	};
@@ -91,12 +100,15 @@ public class MiBandCommunicationService extends Service
 
 			try
 			{
-				mBLEComms.setLowLatency();
 				notifyBand(vibrateDuration, vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
 			}
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to notify");
+			}
+			finally
+			{
+				mBLEComms.setHighLatency();
 			}
 		}
 	};
