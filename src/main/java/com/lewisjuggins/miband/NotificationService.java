@@ -1,19 +1,15 @@
 package com.lewisjuggins.miband;
 
-import android.app.Notification;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
 import android.media.AudioManager;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
@@ -132,16 +128,6 @@ public class NotificationService extends NotificationListenerService
 
 					if(sbn.isClearable())
 					{
-						final Notification mNotification = sbn.getNotification();
-						final Bundle extras = mNotification.extras;
-
-						final Bitmap bitmap = (Bitmap) extras.get(Notification.EXTRA_LARGE_ICON);
-						if(bitmap != null)
-						{
-							Palette palette = Palette.generate(bitmap, 1);
-						//	Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
-						}
-
 						final int vibrateTimes = !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod() ? 0 : application.getmVibrateTimes();
 						final long vibrateDuration = application.getmVibrateDuration();
 						final int flashTimes = application.getmBandColourTimes();
