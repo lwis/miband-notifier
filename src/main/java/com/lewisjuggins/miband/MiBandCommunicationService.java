@@ -109,14 +109,15 @@ public class MiBandCommunicationService extends Service
 
 	@Override public void onCreate()
 	{
-        try {
-            super.onCreate();
-            mBLEComms = new BLECommunicationManager(this);
-             }
-        catch (NullPointerException e)
-             {
-                 Log.d(TAG, "No Bluetooth device avalaible");
-             }
+		super.onCreate();
+		try
+		{
+			mBLEComms = new BLECommunicationManager(this);
+		}
+		catch(NullPointerException e)
+		{
+			Log.d(TAG, "No Bluetooth device available");
+		}
 		// Register to receive messages.
 		LocalBroadcastManager.getInstance(this).registerReceiver(mVibrateReceiver, new IntentFilter("vibrate"));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRebootReceiver, new IntentFilter("reboot"));
@@ -156,12 +157,15 @@ public class MiBandCommunicationService extends Service
 		list.add(stopVibrate);
 
 		final BLETask task = new BLETask(list);
-        try {
-            mBLEComms.queueTask(task);
-        }catch (NullPointerException e){
-            Toast.makeText(getApplicationContext(), "Vibrate: Xiaomi MiBand not paired",
-                    Toast.LENGTH_SHORT).show();
-        }
+
+		try
+		{
+			mBLEComms.queueTask(task);
+		}
+		catch(NullPointerException e)
+		{
+			Toast.makeText(getApplicationContext(), "Vibrate: Xiaomi MiBand not paired", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private void reboot()
@@ -181,12 +185,15 @@ public class MiBandCommunicationService extends Service
 		list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 }));
 
 		final BLETask task = new BLETask(list);
-        try{
-		mBLEComms.queueTask(task);
-        }catch (NullPointerException e){
-        Toast.makeText(getApplicationContext(), "SetColor: Xiaomi MiBand not paired",
-            Toast.LENGTH_SHORT).show();
-}
+
+		try
+		{
+			mBLEComms.queueTask(task);
+		}
+		catch(NullPointerException e)
+		{
+			Toast.makeText(getApplicationContext(), "SetColor: Xiaomi MiBand not paired", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private byte[] convertRgb(int rgb)
@@ -213,13 +220,21 @@ public class MiBandCommunicationService extends Service
 		}
 		for(int i = 1; i <= flashTimes; i++)
 		{
-			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, flashColours[0], flashColours[1], flashColours[2], (byte) 1}));
+			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, flashColours[0], flashColours[1], flashColours[2], (byte) 1 }));
 			list.add(new WaitAction(flashDuration));
-			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, originalColours[0], originalColours[1], originalColours[2], (byte) 0}));
+			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, originalColours[0], originalColours[1], originalColours[2], (byte) 0 }));
 			list.add(new WaitAction(500L));
 		}
 
 		final BLETask task = new BLETask(list);
-		mBLEComms.queueTask(task);
+
+		try
+		{
+			mBLEComms.queueTask(task);
+		}
+		catch(NullPointerException ignored)
+		{
+
+		}
 	}
 }

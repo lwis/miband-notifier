@@ -69,7 +69,9 @@ public class MiOverviewActivity extends Activity
 				}
 			});
 		}
-	};
+	}
+
+	;
 
 	private AddDialog addDialog;
 
@@ -241,23 +243,26 @@ public class MiOverviewActivity extends Activity
 	@Override
 	public void onResume()
 	{
-        try {
-            super.onResume();
+		super.onResume();
 
-            if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, 1);
-            }
+		try
+		{
+			if(!BluetoothAdapter.getDefaultAdapter().isEnabled())
+			{
+				Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+				startActivityForResult(enableBtIntent, 1);
+			}
 
-            boolean isEnabledNLS = isEnabled();
-            if (!isEnabledNLS) {
-                showConfirmDialog();
-            }
-        }catch (NullPointerException e) {
-            Toast.makeText(getApplicationContext(), "No Bluetooth device available",
-                    Toast.LENGTH_SHORT).show();
-        }
-
+			boolean isEnabledNLS = isEnabled();
+			if(!isEnabledNLS)
+			{
+				showConfirmDialog();
+			}
+		}
+		catch(NullPointerException e)
+		{
+			Toast.makeText(getApplicationContext(), "No Bluetooth device available", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private void showConfirmDialog()
@@ -302,8 +307,10 @@ public class MiOverviewActivity extends Activity
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch(item.getItemId())
+		{
 			case R.id.action_vibrate:
 				vibrate(50L);
 				break;
