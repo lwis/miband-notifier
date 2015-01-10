@@ -7,3 +7,4 @@ android:
     - android-21
     - sys-img-armabi-v7a-android-21
     - sys-img-x86-android-21
+script: gradle assembleDebug
