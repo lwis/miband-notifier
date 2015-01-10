@@ -2,14 +2,21 @@ package com.lewisjuggins.miband;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import com.lewisjuggins.miband.bluetooth.BLEAction;
+import com.lewisjuggins.miband.bluetooth.BLETask;
+import com.lewisjuggins.miband.bluetooth.WaitAction;
+import com.lewisjuggins.miband.bluetooth.WriteAction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Lewis on 29/12/14.
@@ -18,27 +25,36 @@ public class MiBandCommunicationService extends Service
 {
 	private final String TAG = this.getClass().getSimpleName();
 
+	private static final WriteAction startVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 1 });
+
+	private static final WriteAction stopVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 19 });
+
+	private static final WriteAction reboot = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 12 });
+
 	private BLECommunicationManager mBLEComms;
 
 	private BroadcastReceiver mVibrateReceiver = new BroadcastReceiver()
 	{
 		@Override
-		public void onReceive(Context context, Intent intent)
+		public void onReceive(Context context, final Intent intent)
 		{
-			final long duration = intent.getLongExtra("duration", 100);
+			new AsyncTask<Void, Void, Void>()
+			{
+				@Override protected Void doInBackground(final Void... params)
+				{
+					final long duration = intent.getLongExtra("duration", 100);
 
-			try
-			{
-				vibrate(duration);
-			}
-			catch(MiBandConnectFailureException e)
-			{
-				Log.i(TAG, "Could not connect to device to vibrate");
-			}
-			finally
-			{
-				mBLEComms.setHighLatency();
-			}
+					try
+					{
+						vibrate(duration);
+					}
+					catch(MiBandConnectFailureException e)
+					{
+						Log.i(TAG, "Could not connect to device to vibrate");
+					}
+					return null;
+				}
+			}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
 	};
 
@@ -54,10 +70,6 @@ public class MiBandCommunicationService extends Service
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to reboot");
-			}
-			finally
-			{
-				mBLEComms.setHighLatency();
 			}
 		}
 	};
@@ -78,10 +90,6 @@ public class MiBandCommunicationService extends Service
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to set colour");
-			}
-			finally
-			{
-				mBLEComms.setHighLatency();
 			}
 		}
 	};
@@ -105,10 +113,6 @@ public class MiBandCommunicationService extends Service
 			catch(MiBandConnectFailureException e)
 			{
 				Log.i(TAG, "Could not connect to device to notify");
-			}
-			finally
-			{
-				mBLEComms.setHighLatency();
 			}
 		}
 	};
@@ -167,8 +171,7 @@ public class MiBandCommunicationService extends Service
 		mBLEComms.disconnectGatt();
 	}
 
-	@Override
-	public IBinder onBind(final Intent intent)
+	@Override public IBinder onBind(final Intent intent)
 	{
 		return null;
 	}
@@ -185,44 +188,39 @@ public class MiBandCommunicationService extends Service
 		}
 	}
 
-	private void startVibrate()
-			throws MiBandConnectFailureException
-	{
-		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-		controlPoint.setValue(new byte[]{ (byte) 8, (byte) 1 });
-		mBLEComms.write(controlPoint);
-	}
-
-	private void stopVibrate()
-			throws MiBandConnectFailureException
-	{
-		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-		controlPoint.setValue(new byte[]{ (byte) 19 });
-		mBLEComms.write(controlPoint);
-	}
-
 	private void vibrate(final long duration)
 			throws MiBandConnectFailureException
 	{
-		startVibrate();
-		threadWait(duration);
-		stopVibrate();
+		final List<BLEAction> list = new ArrayList<>();
+
+		list.add(startVibrate);
+		list.add(new WaitAction(duration));
+		list.add(stopVibrate);
+
+		final BLETask task = new BLETask(list);
+		mBLEComms.queueTask(task);
 	}
 
 	private void reboot()
 			throws MiBandConnectFailureException
 	{
-		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-		controlPoint.setValue(new byte[]{ 12 });
-		mBLEComms.write(controlPoint);
+		final List<BLEAction> list = new ArrayList<>();
+
+		list.add(reboot);
+
+		final BLETask task = new BLETask(list);
+		mBLEComms.queueTask(task);
 	}
 
 	private void setColor(byte r, byte g, byte b, boolean display)
 			throws MiBandConnectFailureException
 	{
-		final BluetoothGattCharacteristic controlPoint = mBLEComms.getCharacteristic(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT);
-		controlPoint.setValue(new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 });
-		mBLEComms.write(controlPoint);
+		final List<BLEAction> list = new ArrayList<>();
+
+		list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 }));
+
+		final BLETask task = new BLETask(list);
+		mBLEComms.queueTask(task);
 	}
 
 	private byte[] convertRgb(int rgb)
@@ -237,20 +235,26 @@ public class MiBandCommunicationService extends Service
 	private synchronized void notifyBand(long vibrateDuration, int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
 		throws MiBandConnectFailureException
 	{
+		final List<BLEAction> list = new ArrayList<>();
 
 		final byte[] flashColours = convertRgb(flashColour);
 		final byte[] originalColours = convertRgb(originalColour);
 
 		for(int i = 1; i <= vibrateTimes; i++)
 		{
-			vibrate(vibrateDuration);
+			list.add(startVibrate);
+			list.add(new WaitAction(vibrateDuration));
+			list.add(stopVibrate);
 		}
 		for(int i = 1; i <= flashTimes; i++)
 		{
-			setColor(flashColours[0], flashColours[1], flashColours[2], true);
-			threadWait(flashDuration);
-			setColor(originalColours[0], originalColours[1], originalColours[2], false);
-			threadWait(500L);
+			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, flashColours[0], flashColours[1], flashColours[2], (byte) 1}));
+			list.add(new WaitAction(flashDuration));
+			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, originalColours[0], originalColours[1], originalColours[2], (byte) 0}));
+			list.add(new WaitAction(500L));
 		}
+
+		final BLETask task = new BLETask(list);
+		mBLEComms.queueTask(task);
 	}
 }

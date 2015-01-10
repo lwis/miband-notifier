@@ -123,11 +123,11 @@ public class MiOverviewActivity extends Activity
 		}
 	};
 
-	private void vibrate(long duration)
+	private void vibrate(final long duration)
 	{
 		Intent intent = new Intent("vibrate");
 		intent.putExtra("duration", duration);
-		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(MiOverviewActivity.this).sendBroadcast(intent);
 	}
 
 	private void reboot()
@@ -325,9 +325,6 @@ public class MiOverviewActivity extends Activity
 						userPreferences.savePreferences(getPreferencesOutputStream());
 					}
 				}).show();
-				break;
-			case R.id.action_reboot:
-				reboot();
 				break;
 		}
 		return true;

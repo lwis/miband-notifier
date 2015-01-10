@@ -12,12 +12,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import com.lewisjuggins.miband.bluetooth.BLETask;
+import com.lewisjuggins.miband.bluetooth.QueueConsumer;
 
 import java.util.Arrays;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -86,28 +85,20 @@ public class BLECommunicationManager
 
 	private CountDownLatch mConnectionLatch;
 
-	private class Consumer implements Runnable
-	{
-		private Queue<BLETask> queue;
-
-		public Consumer(BlockingQueue queue)
-		{
-			this.queue = queue;
-		}
-
-		@Override public void run()
-		{
-			while(true)
-			{
-				queue.peek();
-			}
-		}
-	};
+	private QueueConsumer mQueueConsumer;
 
 	public BLECommunicationManager(final Context context)
 	{
 		this.mContext = context;
 		setupBluetooth();
+		mQueueConsumer = new QueueConsumer(this);
+		Thread t = new Thread(mQueueConsumer);
+		t.start();
+	}
+
+	public void queueTask(final BLETask task)
+	{
+		mQueueConsumer.add(task);
 	}
 
 	public void setupBluetooth()
@@ -281,7 +272,6 @@ public class BLECommunicationManager
 
 	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback()
 	{
-
 		@Override
 		public void onServicesDiscovered(BluetoothGatt gatt, int status)
 		{
