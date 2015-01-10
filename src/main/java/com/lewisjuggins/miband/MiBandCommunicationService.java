@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -38,23 +37,9 @@ public class MiBandCommunicationService extends Service
 		@Override
 		public void onReceive(Context context, final Intent intent)
 		{
-			new AsyncTask<Void, Void, Void>()
-			{
-				@Override protected Void doInBackground(final Void... params)
-				{
-					final long duration = intent.getLongExtra("duration", 100);
+			final long duration = intent.getLongExtra("duration", 100);
 
-					try
-					{
-						vibrate(duration);
-					}
-					catch(MiBandConnectFailureException e)
-					{
-						Log.i(TAG, "Could not connect to device to vibrate");
-					}
-					return null;
-				}
-			}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			vibrate(duration);
 		}
 	};
 
@@ -63,14 +48,7 @@ public class MiBandCommunicationService extends Service
 		@Override
 		public void onReceive(Context context, Intent intent)
 		{
-			try
-			{
-				reboot();
-			}
-			catch(MiBandConnectFailureException e)
-			{
-				Log.i(TAG, "Could not connect to device to reboot");
-			}
+			reboot();
 		}
 	};
 
@@ -83,14 +61,7 @@ public class MiBandCommunicationService extends Service
 			final int green = intent.getIntExtra("green", 6);
 			final int blue = intent.getIntExtra("blue", 6);
 
-			try
-			{
-				setColor((byte) red, (byte) green, (byte) blue, true);
-			}
-			catch(MiBandConnectFailureException e)
-			{
-				Log.i(TAG, "Could not connect to device to set colour");
-			}
+			setColor((byte) red, (byte) green, (byte) blue, true);
 		}
 	};
 
@@ -106,14 +77,7 @@ public class MiBandCommunicationService extends Service
 			final int originalColour = intent.getIntExtra("originalColour", 0xFFFFFFFF);
 			final long flashDuration = intent.getLongExtra("flashDuration", 250L);
 
-			try
-			{
-				notifyBand(vibrateDuration, vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
-			}
-			catch(MiBandConnectFailureException e)
-			{
-				Log.i(TAG, "Could not connect to device to notify");
-			}
+			notifyBand(vibrateDuration, vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
 		}
 	};
 
@@ -176,20 +140,7 @@ public class MiBandCommunicationService extends Service
 		return null;
 	}
 
-	private void threadWait(final long duration)
-	{
-		try
-		{
-			Thread.sleep(duration);
-		}
-		catch(InterruptedException e)
-		{
-			threadWait(duration);
-		}
-	}
-
 	private void vibrate(final long duration)
-			throws MiBandConnectFailureException
 	{
 		final List<BLEAction> list = new ArrayList<>();
 
@@ -202,7 +153,6 @@ public class MiBandCommunicationService extends Service
 	}
 
 	private void reboot()
-			throws MiBandConnectFailureException
 	{
 		final List<BLEAction> list = new ArrayList<>();
 
@@ -213,7 +163,6 @@ public class MiBandCommunicationService extends Service
 	}
 
 	private void setColor(byte r, byte g, byte b, boolean display)
-			throws MiBandConnectFailureException
 	{
 		final List<BLEAction> list = new ArrayList<>();
 
@@ -233,7 +182,6 @@ public class MiBandCommunicationService extends Service
 	}
 
 	private synchronized void notifyBand(long vibrateDuration, int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
-		throws MiBandConnectFailureException
 	{
 		final List<BLEAction> list = new ArrayList<>();
 

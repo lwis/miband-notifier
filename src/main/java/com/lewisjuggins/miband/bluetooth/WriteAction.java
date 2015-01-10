@@ -7,9 +7,9 @@ import java.util.UUID;
  */
 public class WriteAction implements BLEAction
 {
-	private UUID characteristic;
+	private final UUID characteristic;
 
-	private byte[] payload;
+	private final byte[] payload;
 
 	public WriteAction(final UUID characteristic, final byte[] payload)
 	{
@@ -22,19 +22,9 @@ public class WriteAction implements BLEAction
 		return characteristic;
 	}
 
-	public void setCharacteristic(final UUID characteristic)
-	{
-		this.characteristic = characteristic;
-	}
-
 	public byte[] getPayload()
 	{
 		return payload;
-	}
-
-	public void setPayload(final byte[] payload)
-	{
-		this.payload = payload;
 	}
 
 	@Override public void run()

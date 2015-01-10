@@ -21,7 +21,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import com.lewisjuggins.miband.colorpicker.ColorPickerDialog;
-import com.lewisjuggins.miband.model.MiBand;
 import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
 import com.melnykov.fab.FloatingActionButton;
@@ -36,8 +35,6 @@ import java.util.List;
 public class MiOverviewActivity extends Activity
 {
 	private final String TAG = this.getClass().getSimpleName();
-
-	private final MiBand mMiBand = MiBand.getInstance();
 
 	private UserPreferences userPreferences;
 
@@ -130,12 +127,6 @@ public class MiOverviewActivity extends Activity
 		LocalBroadcastManager.getInstance(MiOverviewActivity.this).sendBroadcast(intent);
 	}
 
-	private void reboot()
-	{
-		Intent intent = new Intent("reboot");
-		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-	}
-
 	private void setColour(int r, int g, int b)
 	{
 		Intent intent = new Intent("colour");
@@ -192,6 +183,9 @@ public class MiOverviewActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
+		setContentView(R.layout.activity_mi_overview);
+		findViewById(R.id.fab).setOnClickListener(mAddButtonListener);
+
 		final Intent serviceIntent = new Intent(this, MiBandCommunicationService.class);
 		startService(serviceIntent);
 
@@ -206,10 +200,6 @@ public class MiOverviewActivity extends Activity
 
 		userPreferences = UserPreferences.getInstance();
 
-		setContentView(R.layout.activity_mi_overview);
-
-		findViewById(R.id.fab).setOnClickListener(mAddButtonListener);
-
 		final List<Application> appArray = userPreferences.getAppArray();
 		final PackageManager pm = getPackageManager();
 
@@ -219,7 +209,7 @@ public class MiOverviewActivity extends Activity
 			{
 				app.setmAppName(pm.getApplicationLabel(pm.getApplicationInfo(app.getmPackageName(), PackageManager.GET_META_DATA)).toString());
 			}
-			catch(PackageManager.NameNotFoundException e)
+			catch(PackageManager.NameNotFoundException ignored)
 			{
 
 			}
@@ -332,7 +322,7 @@ public class MiOverviewActivity extends Activity
 
 	private ArrayList<Application> getApps()
 	{
-		final ArrayList<Application> toRet = new ArrayList<Application>();
+		final ArrayList<Application> toRet = new ArrayList<>();
 		final PackageManager pm = getPackageManager();
 
 		List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);

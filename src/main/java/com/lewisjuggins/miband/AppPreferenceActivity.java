@@ -91,7 +91,7 @@ public class AppPreferenceActivity extends Activity
 	@Override protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		//getActionBar().hide();
+		getActionBar().hide();
 
 		setContentView(R.layout.activity_edit_app_prefs);
 
@@ -113,7 +113,7 @@ public class AppPreferenceActivity extends Activity
 			final TextView appNameLabel = (TextView) findViewById(R.id.appNameLabel);
 			appNameLabel.setText(pm.getApplicationLabel(info));
 		}
-		catch(PackageManager.NameNotFoundException e)
+		catch(PackageManager.NameNotFoundException ignored)
 		{
 
 		}

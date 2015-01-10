@@ -277,7 +277,10 @@ public class BLECommunicationManager
 		{
 			if(status == BluetoothGatt.GATT_SUCCESS)
 			{
-				mConnectionLatch.countDown();
+				if(mConnectionLatch != null)
+				{
+					mConnectionLatch.countDown();
+				}
 			}
 		}
 
@@ -292,7 +295,10 @@ public class BLECommunicationManager
 					Log.d(TAG, "Gatt state: connected");
 					gatt.discoverServices();
 					mDeviceConnected = true;
-					mConnectionLatch.countDown();
+					if(mConnectionLatch != null)
+					{
+						mConnectionLatch.countDown();
+					}
 					break;
 				default:
 					Log.d(TAG, "Gatt state: not connected");
@@ -305,7 +311,10 @@ public class BLECommunicationManager
 		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
 		{
 			Log.d(TAG, "Write successful: " + Arrays.toString(characteristic.getValue()));
-			mWriteLatch.countDown();
+			if(mWriteLatch != null)
+			{
+				mWriteLatch.countDown();
+			}
 		}
 	};
 }
