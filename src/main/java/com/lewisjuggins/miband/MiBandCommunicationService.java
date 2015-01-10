@@ -9,6 +9,8 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.lewisjuggins.miband.bluetooth.BLEAction;
 import com.lewisjuggins.miband.bluetooth.BLETask;
 import com.lewisjuggins.miband.bluetooth.WaitAction;
@@ -24,7 +26,7 @@ public class MiBandCommunicationService extends Service
 {
 	private final String TAG = this.getClass().getSimpleName();
 
-	private static final WriteAction startVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 1 });
+	private static final WriteAction startVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 2 });
 
 	private static final WriteAction stopVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 19 });
 
@@ -107,9 +109,14 @@ public class MiBandCommunicationService extends Service
 
 	@Override public void onCreate()
 	{
-		super.onCreate();
-		mBLEComms = new BLECommunicationManager(this);
-
+        try {
+            super.onCreate();
+            mBLEComms = new BLECommunicationManager(this);
+             }
+        catch (NullPointerException e)
+             {
+                 Log.d(TAG, "No Bluetooth device avalaible");
+             }
 		// Register to receive messages.
 		LocalBroadcastManager.getInstance(this).registerReceiver(mVibrateReceiver, new IntentFilter("vibrate"));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mRebootReceiver, new IntentFilter("reboot"));
@@ -149,7 +156,12 @@ public class MiBandCommunicationService extends Service
 		list.add(stopVibrate);
 
 		final BLETask task = new BLETask(list);
-		mBLEComms.queueTask(task);
+        try {
+            mBLEComms.queueTask(task);
+        }catch (NullPointerException e){
+            Toast.makeText(getApplicationContext(), "Vibrate: Xiaomi MiBand not paired",
+                    Toast.LENGTH_SHORT).show();
+        }
 	}
 
 	private void reboot()
@@ -169,7 +181,12 @@ public class MiBandCommunicationService extends Service
 		list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, r, g, b, display ? (byte) 1 : (byte) 0 }));
 
 		final BLETask task = new BLETask(list);
+        try{
 		mBLEComms.queueTask(task);
+        }catch (NullPointerException e){
+        Toast.makeText(getApplicationContext(), "SetColor: Xiaomi MiBand not paired",
+            Toast.LENGTH_SHORT).show();
+}
 	}
 
 	private byte[] convertRgb(int rgb)

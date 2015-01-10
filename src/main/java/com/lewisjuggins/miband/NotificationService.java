@@ -139,7 +139,7 @@ public class NotificationService extends NotificationListenerService
 						if(bitmap != null)
 						{
 							Palette palette = Palette.generate(bitmap, 1);
-							Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
+						//	Log.i(TAG, Integer.toString(palette.getVibrantSwatch().getRgb()));
 						}
 
 						final int vibrateTimes = !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod() ? 0 : application.getmVibrateTimes();

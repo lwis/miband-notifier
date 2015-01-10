@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
+
 import com.lewisjuggins.miband.colorpicker.ColorPickerDialog;
 import com.lewisjuggins.miband.preferences.Application;
 import com.lewisjuggins.miband.preferences.UserPreferences;
@@ -239,18 +241,23 @@ public class MiOverviewActivity extends Activity
 	@Override
 	public void onResume()
 	{
-		super.onResume();
+        try {
+            super.onResume();
 
-		if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			startActivityForResult(enableBtIntent, 1);
-		}
+            if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
 
-		boolean isEnabledNLS = isEnabled();
-		if(!isEnabledNLS)
-		{
-			showConfirmDialog();
-		}
+            boolean isEnabledNLS = isEnabled();
+            if (!isEnabledNLS) {
+                showConfirmDialog();
+            }
+        }catch (NullPointerException e) {
+            Toast.makeText(getApplicationContext(), "No Bluetooth device available",
+                    Toast.LENGTH_SHORT).show();
+        }
+
 	}
 
 	private void showConfirmDialog()
