@@ -12,4 +12,6 @@
     <string name="no_vibrate_outside_of_period">Lights outside of period</string>
     <string name="done">Done</string>
     <string name="temp_text">App Name</string>
+    <string name="test_band_vibrate">Test Band Vibrate</string>
+    <string name="set_band_colour">Set Band LED Color</string>
 </resources>
