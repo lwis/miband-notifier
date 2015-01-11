@@ -153,8 +153,8 @@ public class MiBandCommunicationService extends Service
 		final List<BLEAction> list = new ArrayList<>();
 
 		list.add(startVibrate);
-		list.add(new WaitAction(duration));
-		list.add(stopVibrate);
+		//list.add(new WaitAction(duration));
+		//list.add(stopVibrate);
 
 		final BLETask task = new BLETask(list);
 
@@ -215,13 +215,13 @@ public class MiBandCommunicationService extends Service
 		for(int i = 1; i <= vibrateTimes; i++)
 		{
 			list.add(startVibrate);
-			list.add(new WaitAction(vibrateDuration));
-			list.add(stopVibrate);
+			//list.add(new WaitAction(vibrateDuration));
+			//list.add(stopVibrate);
 		}
 		for(int i = 1; i <= flashTimes; i++)
 		{
 			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, flashColours[0], flashColours[1], flashColours[2], (byte) 1 }));
-			list.add(new WaitAction(flashDuration));
+			list.add(new WaitAction(500L));
 			list.add(new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 14, originalColours[0], originalColours[1], originalColours[2], (byte) 0 }));
 			list.add(new WaitAction(500L));
 		}
