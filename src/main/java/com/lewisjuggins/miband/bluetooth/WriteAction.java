@@ -9,7 +9,7 @@ public class WriteAction implements BLEAction
 {
 	private final UUID characteristic;
 
-	private final byte[] payload;
+	protected byte[] payload;
 
 	public WriteAction(final UUID characteristic, final byte[] payload)
 	{

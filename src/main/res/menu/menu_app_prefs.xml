@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_set_period"
+        android:title="@string/set_period" />
+    <item
+        android:id="@+id/action_no_vibrate_outside_of_period"
+        android:checkable="true"
+        android:title="@string/no_vibrate_outside_of_period" />
+    <item
+        android:id="@+id/action_priority_mode_only"
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/priority_mode_only" />
+    <item
+        android:id="@+id/action_user_not_present"
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/user_not_present" />
+</menu>

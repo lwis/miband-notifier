@@ -26,11 +26,19 @@ public class MiBandCommunicationService extends Service
 {
 	private final String TAG = this.getClass().getSimpleName();
 
-	private static final WriteAction startVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 2 });
+	private static final WriteAction doubleVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 2 });
+
+	private static final WriteAction longVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 1 });
+
+	private static final WriteAction greenVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 8, (byte) 0 });
 
 	private static final WriteAction stopVibrate = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ (byte) 19 });
 
 	private static final WriteAction reboot = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_CONTROL_POINT, new byte[]{ 12 });
+
+	private static final WriteAction highLatency = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS, new byte[]{(byte)0xcc, 0x01, (byte)0xf4, 0x01, 0x00, 0x00, (byte)0xf4, 0x01, 0x00, 0x00, 0x00, 0x00});
+
+	private static final WriteAction lowLatency = new WriteAction(MiBandConstants.UUID_CHARACTERISTIC_LE_PARAMS, new byte[]{0x27, 0x00, 0x31, 0x00, 0x00, 0x00, (byte)0xf4, 0x01, 0x00, 0x00, 0x00, 0x00});
 
 	private BLECommunicationManager mBLEComms;
 
@@ -152,7 +160,7 @@ public class MiBandCommunicationService extends Service
 	{
 		final List<BLEAction> list = new ArrayList<>();
 
-		list.add(startVibrate);
+		list.add(doubleVibrate);
 		//list.add(new WaitAction(duration));
 		//list.add(stopVibrate);
 
@@ -214,7 +222,7 @@ public class MiBandCommunicationService extends Service
 
 		for(int i = 1; i <= vibrateTimes; i++)
 		{
-			list.add(startVibrate);
+			list.add(doubleVibrate);
 			//list.add(new WaitAction(vibrateDuration));
 			//list.add(stopVibrate);
 		}

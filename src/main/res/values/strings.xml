@@ -14,4 +14,6 @@
     <string name="temp_text">App Name</string>
     <string name="test_band_vibrate">Test Band Vibrate</string>
     <string name="set_band_colour">Set Band LED Color</string>
+    <string name="priority_mode_only">Priority Mode Only</string>
+    <string name="set_period">Set Period</string>
 </resources>
