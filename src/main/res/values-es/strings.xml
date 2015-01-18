@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Mi Band Notificador</string>
+    <string name="app_name">MiBand Notificador</string>
     <string name="looking_for_miband">Buscando MiBand</string>
     <string name="vibrations">Vibraciones</string>
-    <string name="duration">Duracion</string>
+    <string name="duration">Duración</string>
     <string name="flash">Parpadeo</string>
     <string name="colour">Color</string>
     <string name="start">Inicio</string>
     <string name="end">Fin</string>
     <string name="user_not_present">No intrusivo</string>
-    <string name="no_vibrate_outside_of_period">Sólo luces fuera del periodo</string>
+    <string name="no_vibrate_outside_of_period">Luces solo fuera del periodo</string>
     <string name="done">Guardar</string>
     <string name="temp_text">Ejemplo</string>
-    <string name="test_band_vibrate">Test vibracion MiBand</string>
-    <string name="set_band_colour">Elegir Color LED</string>
+    <string name="test_band_vibrate">Test de vibración MiBand</string>
+    <string name="set_band_colour">Elegir color LEDs</string>
 </resources>
