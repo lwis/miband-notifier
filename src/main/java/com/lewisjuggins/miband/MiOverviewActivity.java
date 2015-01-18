@@ -224,7 +224,14 @@ public class MiOverviewActivity extends Activity
 			@Override
 			public int compare(Object lhs, Object rhs)
 			{
-				return ((Application) lhs).getmAppName().compareTo(((Application) rhs).getmAppName());
+				if(lhs instanceof Application && rhs instanceof Application)
+				{
+					return ((Application) lhs).getmAppName().compareTo(((Application) rhs).getmAppName());
+				}
+				else
+				{
+					return 0;
+				}
 			}
 		});
 
