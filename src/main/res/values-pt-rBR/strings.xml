@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mi Band Notifier</string>
+    <string name="looking_for_miband">Procurando pela Mi Band</string>
+    <string name="vibrations">N° de vibrações</string>
+    <string name="duration">Duração</string>
+    <string name="flash">Flash</string>
+    <string name="colour">Cor</string>
+    <string name="start">Inicio</string>
+    <string name="end">Fim</string>
+    <string name="user_not_present">Sem interação</string>
+    <string name="no_vibrate_outside_of_period">Luzes fora do período</string>
+    <string name="done">Salvar</string>
+    <string name="temp_text">Nome Aplicativo</string>
+    <string name="test_band_vibrate">Testar Vibração da Band</string>
+    <string name="set_band_colour">Setar cor do LED da Band</string>
+</resources>

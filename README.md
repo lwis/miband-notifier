@@ -24,7 +24,5 @@ Disclaimer: This app includes no warranty for your device, in my testing I've ne
 - Tests
 
 ##Future:
-
-- Tasker plugin support
 - Pull in more data from the band
     - Maybe integrate with Google Fit?
