@@ -1,4 +1,4 @@
-#Mi Band Notifier [![Build Status](https://api.travis-ci.org/FernandoWahl/miband-notifier.svg)](https://api.travis-ci.org/FernandoWahl)
+#Mi Band Notifier [![Build Status](https://travis-ci.org/lwis/miband-notifier.svg?branch=master)](https://travis-ci.org/lwis/miband-notifier)
 
 Warning: this app is very much in the development stages.
 
