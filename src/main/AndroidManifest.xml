@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lewisjuggins.miband"
+    xmlns:tools="http://schemas.android.com/tools"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -15,6 +16,10 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+            
         <activity
             android:name="com.lewisjuggins.miband.MiOverviewActivity"
             android:label="@string/app_name" >
@@ -27,6 +32,31 @@
         <activity
                 android:name="com.lewisjuggins.miband.AppPreferenceActivity"
                 android:label="@string/app_name">
+        </activity>
+        <activity
+            android:name="com.lewisjuggins.miband.ui.InfoActivity"
+            android:exported="true"
+            tools:ignore="ExportedActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.INFO" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.EditActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Locale.Dark"
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="ExportedActivity" >
+
+            <!-- this Intent filter allows the plug-in to be discovered by Locale -->
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING" />
+            </intent-filter>
         </activity>
 
         <service android:name="com.lewisjuggins.miband.NotificationService"
@@ -46,6 +76,15 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".receiver.FireReceiver"
+            android:exported="true"
+            android:process=":background"
+            tools:ignore="ExportedReceiver" >
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

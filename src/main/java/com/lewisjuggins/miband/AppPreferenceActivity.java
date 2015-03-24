@@ -82,6 +82,7 @@ public class AppPreferenceActivity extends Activity
 			{
 				@Override public void onColorSelected(int rgb)
 				{
+                    Log.i(Constants.LOG_TAG, "" + rgb);
 					mColour = rgb;
 				}
 			}).show();
