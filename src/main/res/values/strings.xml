@@ -12,6 +12,12 @@
     <string name="no_vibrate_outside_of_period">Lights outside of period</string>
     <string name="done">Done</string>
     <string name="temp_text">App Name</string>
+    <string name="action_settings">Settings</string>
     <string name="test_band_vibrate">Test Band Vibrate</string>
     <string name="set_band_colour">Set Band LED Color</string>
+    <string name="set_MAC_address">Set Mi Band MAC address</string>
+    <string name="set_MAC_address_ok">MAC address set correctly</string>
+    <string name="set_MAC_address_error">Invalid MAC address</string>
+    <string name="set_MAC_address_removed">MAC address removed</string>
+    <string name="alert_MAC_address">Mi Band not paired or MAC address required for connection</string>
 </resources>

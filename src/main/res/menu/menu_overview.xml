@@ -2,4 +2,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/action_vibrate" android:title="@string/test_band_vibrate"/>
     <item android:id="@+id/action_ledcolor" android:title="@string/set_band_colour"/>
+    <item android:id="@+id/action_setMACAddress" android:title="@string/set_MAC_address"/>
 </menu>

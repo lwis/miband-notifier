@@ -27,6 +27,8 @@ public class UserPreferences
 
 	private int mBandColour = 0xFFFFFFFF;
 
+    private String miBandMAC = "";
+
 	private static UserPreferences INSTANCE;
 
 	//This should never be invoked, but is required for Gson instantiation.
@@ -122,4 +124,8 @@ public class UserPreferences
 	{
 		this.mBandColour = mBandColour;
 	}
+
+    public String getMiBandMAC() { return miBandMAC; }
+
+    public void setMiBandMAC(String miBandMAC) { this.miBandMAC = miBandMAC; }
 }

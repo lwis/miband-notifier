@@ -3,6 +3,7 @@ package com.lewisjuggins.miband;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -19,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -33,6 +36,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MiOverviewActivity extends Activity
 {
@@ -245,9 +251,38 @@ public class MiOverviewActivity extends Activity
 		fab.attachToListView(mListView);
 
 		addDialog = new AddDialog(this);
+
+        checkMACAddressRequired();
 	}
 
-	@Override
+    private void checkMACAddressRequired()
+    {
+        boolean showAlert = true;
+
+        if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            final BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            final Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+            for (BluetoothDevice pairedDevice : pairedDevices) {
+                if (pairedDevice.getName().equals("MI") && pairedDevice.getAddress().startsWith(MiBandConstants.MAC_ADDRESS_FILTER)) {
+                    showAlert = false;
+                }
+            }
+
+            if(showAlert)
+            {
+                if(!userPreferences.getMiBandMAC().equals(""))
+                    showAlert = false;
+            }
+
+            if(showAlert)
+            {
+                Toast.makeText(getBaseContext(),getResources().getString(R.string.alert_MAC_address),Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
 	public void onResume()
 	{
 		super.onResume();
@@ -337,6 +372,47 @@ public class MiOverviewActivity extends Activity
 					}
 				}).show();
 				break;
+            case R.id.action_setMACAddress:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getResources().getString(R.string.set_MAC_address));
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                String lastMAC = userPreferences.getMiBandMAC();
+                if(lastMAC.equals(""))
+                    lastMAC = MiBandConstants.MAC_ADDRESS_FILTER;
+                input.setText(lastMAC);
+                builder.setView(input);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String macAddress = input.getText().toString().trim().toUpperCase();
+                        if(macAddress.equals("")||macAddress.equals(MiBandConstants.MAC_ADDRESS_FILTER.toUpperCase()))
+                        {
+                            userPreferences.setMiBandMAC("");
+                            userPreferences.savePreferences(getPreferencesOutputStream());
+                            Toast.makeText(getBaseContext(), getResources().getString(R.string.set_MAC_address_removed), Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Pattern p = Pattern.compile("([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}");
+                            Matcher m = p.matcher(macAddress);
+                            if (m.find()) {
+                                userPreferences.setMiBandMAC(macAddress);
+                                userPreferences.savePreferences(getPreferencesOutputStream());
+                                Toast.makeText(getBaseContext(), getResources().getString(R.string.set_MAC_address_ok), Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getBaseContext(), getResources().getString(R.string.set_MAC_address_error), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+                break;
 		}
 		return true;
 	}
