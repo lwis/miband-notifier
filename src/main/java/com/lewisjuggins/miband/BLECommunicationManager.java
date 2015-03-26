@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.util.Log;
 import com.lewisjuggins.miband.bluetooth.BLETask;
 import com.lewisjuggins.miband.bluetooth.QueueConsumer;
+import com.lewisjuggins.miband.preferences.UserPreferences;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -118,6 +119,16 @@ public class BLECommunicationManager
 					mDeviceAddress = pairedDevice.getAddress();
 				}
 			}
+
+            if(mDeviceAddress == null)
+            {
+                Log.d(TAG, "Can't find Bluetooth by paired devices. Trying by MAC address");
+                mDeviceAddress = UserPreferences.getInstance().getMiBandMAC();
+                if(mDeviceAddress.equals("")) {
+                    Log.d(TAG, "Manual MAC address not found. Please set it.");
+                    return;
+                }
+            }
 
 			if(mDeviceAddress != null)
 			{
