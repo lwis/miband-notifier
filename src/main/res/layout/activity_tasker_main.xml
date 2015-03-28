@@ -52,28 +52,6 @@
         android:minWidth="170dp"
         android:progress="1" />
 
-    <TextView
-        android:id="@+id/flashDurationLabelPlugin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashAmountLabelPlugin"
-        android:layout_below="@+id/flashAmountLabelPlugin"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:minHeight="32dp"
-        android:text="@string/duration"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <SeekBar
-        android:id="@+id/flashDurationSeekBarPlugin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashAmountSeekBarPlugin"
-        android:layout_alignTop="@+id/flashDurationLabelPlugin"
-        android:max="500"
-        android:minWidth="170dp"
-        android:progress="250" />
-
     <Button
         android:id="@+id/colourButtonPlugin"
         android:layout_width="wrap_content"
@@ -82,6 +60,6 @@
         android:layout_marginStart="25dp"
         android:minHeight="10dp"
         android:text="@string/colour"
-        android:layout_below="@+id/flashDurationSeekBarPlugin" />
+        android:layout_below="@+id/flashAmountSeekBarPlugin" />
 
 </RelativeLayout>

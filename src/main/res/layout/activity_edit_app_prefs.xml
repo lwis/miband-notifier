@@ -95,28 +95,6 @@
         android:minWidth="170dp"
         android:progress="1" />
 
-    <TextView
-        android:id="@+id/flashDurationLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashAmountLabel"
-        android:layout_below="@+id/flashAmountLabel"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:minHeight="32dp"
-        android:text="@string/duration"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <SeekBar
-        android:id="@+id/flashDurationSeekBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashAmountSeekBar"
-        android:layout_alignTop="@+id/flashDurationLabel"
-        android:max="1000"
-        android:minWidth="170dp"
-        android:progress="250" />
-
     <Button
         android:id="@+id/colourButton"
         android:layout_width="wrap_content"
@@ -131,8 +109,8 @@
         android:id="@+id/startTimeTextField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashDurationSeekBar"
-        android:layout_below="@+id/flashDurationSeekBar"
+        android:layout_alignStart="@+id/flashAmountSeekBar"
+        android:layout_below="@+id/flashAmountSeekBar"
         android:layout_marginTop="20dp"
         android:ems="10"
         android:focusable="false" />
@@ -142,7 +120,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/startTimeTextField"
-        android:layout_alignStart="@+id/flashDurationLabel"
+        android:layout_alignStart="@+id/flashAmountLabel"
         android:layout_alignTop="@+id/startTimeTextField"
         android:gravity="center"
         android:minHeight="32dp"

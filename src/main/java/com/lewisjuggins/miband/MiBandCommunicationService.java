@@ -73,13 +73,11 @@ public class MiBandCommunicationService extends Service
 		public void onReceive(Context context, Intent intent)
 		{
 			final int vibrateTimes = intent.getIntExtra("vibrateTimes", 1);
-			final long vibrateDuration = intent.getLongExtra("vibrateDuration", 250L);
 			final int flashTimes = intent.getIntExtra("flashTimes", 1);
 			final int flashColour = intent.getIntExtra("flashColour", 0xFFFFFFFF);
 			final int originalColour = intent.getIntExtra("originalColour", 0xFFFFFFFF);
-			final long flashDuration = intent.getLongExtra("flashDuration", 250L);
 
-			notifyBand(vibrateDuration, vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
+			notifyBand(vibrateTimes, flashTimes, flashColour, originalColour);
 		}
 	};
 
@@ -205,7 +203,7 @@ public class MiBandCommunicationService extends Service
 		return new byte[]{ (byte) red, (byte) green, (byte) blue };
 	}
 
-	private synchronized void notifyBand(long vibrateDuration, int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
+	private synchronized void notifyBand(int vibrateTimes, int flashTimes, int flashColour, int originalColour)
 	{
 		final List<BLEAction> list = new ArrayList<>();
 

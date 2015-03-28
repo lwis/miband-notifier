@@ -126,19 +126,15 @@ public class NotificationService extends NotificationListenerService
 					if(sbn.isClearable())
 					{
 						final int vibrateTimes = !isInPeriod(application.getmStartPeriod(), application.getmEndPeriod()) && application.ismLightsOnlyOutsideOfPeriod() ? 0 : application.getmVibrateTimes();
-						final long vibrateDuration = application.getmVibrateDuration();
 						final int flashTimes = application.getmBandColourTimes();
 						final int flashColour = application.getmBandColour();
 						final int originalColour = userPreferences.getmBandColour();
-						final long flashDuration = application.getmBandColourDuration();
 
 						final Intent notifyIntent = new Intent("notifyBand");
 						notifyIntent.putExtra("vibrateTimes", vibrateTimes);
-						notifyIntent.putExtra("vibrateDuration", vibrateDuration);
 						notifyIntent.putExtra("flashTimes", flashTimes);
 						notifyIntent.putExtra("flashColour", flashColour);
 						notifyIntent.putExtra("originalColour", originalColour);
-						notifyIntent.putExtra("flashDuration", flashDuration);
 
 						lbm.sendBroadcastSync(notifyIntent);
 					}

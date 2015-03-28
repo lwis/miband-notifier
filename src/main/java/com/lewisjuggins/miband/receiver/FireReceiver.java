@@ -63,7 +63,6 @@ public final class FireReceiver extends BroadcastReceiver
 
             final int vibrateTimes = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_VIBRATION);
             final int flashTimes = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH);
-            final long flashDuration =  bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_DURATION);
             final int flashColour = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_COLOR);
             int originalColour = 0;
 
@@ -77,7 +76,7 @@ public final class FireReceiver extends BroadcastReceiver
             {
                 originalColour = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_COLOR);
             }
-            notifyBand(vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
+            notifyBand(vibrateTimes, flashTimes, flashColour, originalColour);
 
         }
     }
@@ -91,7 +90,7 @@ public final class FireReceiver extends BroadcastReceiver
         return new byte[]{ (byte) red, (byte) green, (byte) blue };
     }
 
-    private void notifyBand(int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
+    private void notifyBand(int vibrateTimes, int flashTimes, int flashColour, int originalColour)
     {
         final List<BLEAction> list = new ArrayList<>();
 

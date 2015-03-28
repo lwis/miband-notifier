@@ -40,9 +40,6 @@ public final class EditActivity extends AbstractPluginActivity {
                 final int flash = localeBundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH);
                 ((SeekBar) findViewById(R.id.flashAmountSeekBarPlugin)).setProgress(flash);
 
-                final int flashDuration = localeBundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_DURATION);
-                ((SeekBar) findViewById(R.id.flashDurationSeekBarPlugin)).setProgress(flashDuration);
-
                 final int color = localeBundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_COLOR);
                 EditActivity.color = color;
                 Log.i(Constants.LOG_TAG, "" + color);
@@ -69,10 +66,8 @@ public final class EditActivity extends AbstractPluginActivity {
         {
             final int vibration = ((SeekBar) findViewById(R.id.vibrationsSeekBarPlugin)).getProgress();
             final int flash = ((SeekBar) findViewById(R.id.flashAmountSeekBarPlugin)).getProgress();
-            final int flashDuration = ((SeekBar) findViewById(R.id.flashDurationSeekBarPlugin)).getProgress();
-
             final Intent resultIntent = new Intent();
-            final Bundle resultBundle = PluginBundleManager.generateBundle(getApplicationContext(),vibration, flash, flashDuration, EditActivity.color);
+            final Bundle resultBundle = PluginBundleManager.generateBundle(getApplicationContext(),vibration, flash, EditActivity.color);
             resultIntent.putExtra(com.twofortyfouram.locale.Intent.EXTRA_BUNDLE, resultBundle);
 
             int r = (EditActivity.color >> 16) & 0xFF;
@@ -81,7 +76,6 @@ public final class EditActivity extends AbstractPluginActivity {
 
             final String blurb = getResources().getText(R.string.vibrations)+": "+vibration+"\n"+
                     getResources().getText(R.string.flash)+": "+flash+"\n"+
-                    getResources().getText(R.string.duration)+": "+flashDuration+"\n"+
                     getResources().getText(R.string.colour)+": "+String.format("#%02x%02x%02x", r, g, b)+"\n";
 
             resultIntent.putExtra(com.twofortyfouram.locale.Intent.EXTRA_STRING_BLURB, blurb);

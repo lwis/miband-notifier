@@ -11,7 +11,6 @@ public final class PluginBundleManager
 {
     public static final String BUNDLE_EXTRA_VIBRATION = "com.lewisjuggins.miband.extra.VIBRATION";
     public static final String BUNDLE_EXTRA_FLASH = "com.lewisjuggins.miband.extra.FLASH";
-    public static final String BUNDLE_EXTRA_FLASH_DURATION = "com.lewisjuggins.miband.extra.FLASH_DURATION";
     public static final String BUNDLE_EXTRA_FLASH_COLOR = "com.lewisjuggins.miband.extra.FLASH_COLOR";
     public static final String BUNDLE_EXTRA_INT_VERSION_CODE = "com.lewisjuggins.miband.extra.INT_VERSION_CODE";
     public static boolean isBundleValid(final Bundle bundle) {
@@ -24,9 +23,6 @@ public final class PluginBundleManager
         if (!bundle.containsKey(BUNDLE_EXTRA_FLASH)){
             return false;
         }
-        if (!bundle.containsKey(BUNDLE_EXTRA_FLASH_DURATION)){
-            return false;
-        }
         if (!bundle.containsKey(BUNDLE_EXTRA_FLASH_COLOR)){
             return false;
         }
@@ -34,7 +30,7 @@ public final class PluginBundleManager
             return false;
         }
 
-        if (5 != bundle.keySet().size()){
+        if (4 != bundle.keySet().size()){
             return false;
         }
 
@@ -45,13 +41,12 @@ public final class PluginBundleManager
         return true;
     }
 
-    public static Bundle generateBundle(final Context context, final int vibration, final int flash, final int flashDuration, final int flashColor)
+    public static Bundle generateBundle(final Context context, final int vibration, final int flash, final int flashColor)
     {
         final Bundle result = new Bundle();
         result.putInt(BUNDLE_EXTRA_INT_VERSION_CODE, Constants.getVersionCode(context));
         result.putInt(BUNDLE_EXTRA_VIBRATION, vibration);
         result.putInt(BUNDLE_EXTRA_FLASH, flash);
-        result.putInt(BUNDLE_EXTRA_FLASH_DURATION, flashDuration);
         result.putInt(BUNDLE_EXTRA_FLASH_COLOR, flashColor);
         return result;
     }

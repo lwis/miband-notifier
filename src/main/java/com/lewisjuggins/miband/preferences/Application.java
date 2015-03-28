@@ -13,11 +13,7 @@ public class Application
 
 	private int mVibrateTimes;
 
-	private long mVibrateDuration;
-
 	private int mBandColourTimes;
-
-	private long mBandColourDuration;
 
 	private int mBandColour;
 
@@ -56,12 +52,10 @@ public class Application
 		this.mAppName = applicationLabel;
 	}
 
-	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, boolean mLightsOnlyOutsideOfPeriod, boolean mPriorityModeNone, boolean mPriorityModePriority, int mBandColour)
+	public void loadValues(int mVibrateTimes, int mBandColourTimes, boolean mLightsOnlyOutsideOfPeriod, boolean mPriorityModeNone, boolean mPriorityModePriority, int mBandColour)
 	{
 		this.mVibrateTimes = mVibrateTimes;
-		this.mVibrateDuration = mVibrateDuration;
 		this.mBandColourTimes = mBandColourTimes;
-		this.mBandColourDuration = mBandColourDuration;
 		this.mLightsOnlyOutsideOfPeriod = mLightsOnlyOutsideOfPeriod;
         this.mPriorityModeNone = mPriorityModeNone;
 		this.mPriorityModePriority = mPriorityModePriority;
@@ -107,16 +101,6 @@ public class Application
 		this.mVibrateTimes = mVibrateTimes;
 	}
 
-	public long getmVibrateDuration()
-	{
-		return mVibrateDuration;
-	}
-
-	public void setmVibrateDuration(int mVibrateDuration)
-	{
-		this.mVibrateDuration = mVibrateDuration;
-	}
-
 	public int getmBandColourTimes()
 	{
 		return mBandColourTimes;
@@ -125,16 +109,6 @@ public class Application
 	public void setmBandColourTimes(int mBandColourTimes)
 	{
 		this.mBandColourTimes = mBandColourTimes;
-	}
-
-	public long getmBandColourDuration()
-	{
-		return mBandColourDuration;
-	}
-
-	public void setmBandColourDuration(int mBandColourDuration)
-	{
-		this.mBandColourDuration = mBandColourDuration;
 	}
 
 	public int getmBandColour()
