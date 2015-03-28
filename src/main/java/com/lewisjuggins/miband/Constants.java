@@ -6,6 +6,8 @@ public final class Constants
 {
     public static final String LOG_TAG = "MiBandSetting";
 
+    public static final int APP_RESULT = 01;
+
     public static final boolean IS_LOGGABLE = BuildConfig.DEBUG;
     public static final boolean IS_PARAMETER_CHECKING_ENABLED = BuildConfig.DEBUG;
 

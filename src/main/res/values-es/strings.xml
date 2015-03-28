@@ -14,4 +14,11 @@
     <string name="temp_text">Ejemplo</string>
     <string name="test_band_vibrate">Test de vibración MiBand</string>
     <string name="set_band_colour">Elegir color LEDs</string>
+    <string name="no">No</string>
+    <string name="yes">Sí</string>
+    <string name="alert_delete">Borrar?</string>
+    <string name="select_app">Seleccione una aplicación</string>
+    <string name="press_back">Pulse atrás de nuevo para salir.</string>
+    <string name="interruption_none">Vibrar em modo \'Nenhum\'</string>
+    <string name="interruption_priority">Vibrar em modo \'Prioridade\'</string>
 </resources>

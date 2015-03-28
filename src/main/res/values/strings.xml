@@ -20,4 +20,11 @@
     <string name="set_MAC_address_error">Invalid MAC address</string>
     <string name="set_MAC_address_removed">MAC address removed</string>
     <string name="alert_MAC_address">Mi Band not paired or MAC address required for connection</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="alert_delete">Delete?</string>
+    <string name="select_app">Select an app</string>
+    <string name="press_back">Press Back again to Exit.</string>
+    <string name="interruption_none">Vibrate in Mode \'None\'</string>
+    <string name="interruption_priority">Vibrate in Mode \'Priority\'</string>
 </resources>

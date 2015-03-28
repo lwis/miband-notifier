@@ -51,7 +51,7 @@
         android:minWidth="170dp"
         android:progress="1" />
 
-    <TextView
+    <!--<TextView
         android:id="@+id/vibrationDurationLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,14 +71,14 @@
         android:layout_alignTop="@+id/vibrationDurationLabel"
         android:max="500"
         android:minWidth="170dp"
-        android:progress="200" />
+        android:progress="200" /> -->
 
     <TextView
         android:id="@+id/flashAmountLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/vibrationDurationLabel"
-        android:layout_below="@+id/vibrationDurationLabel"
+        android:layout_alignStart="@+id/vibrationsLabel"
+        android:layout_below="@+id/vibrationsLabel"
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:minHeight="32dp"
@@ -89,33 +89,11 @@
         android:id="@+id/flashAmountSeekBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/vibrationDurationSeekBar"
+        android:layout_alignStart="@+id/vibrationsSeekBar"
         android:layout_alignTop="@+id/flashAmountLabel"
         android:max="4"
         android:minWidth="170dp"
         android:progress="1" />
-
-    <TextView
-        android:id="@+id/flashDurationLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashAmountLabel"
-        android:layout_below="@+id/flashAmountLabel"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:minHeight="32dp"
-        android:text="@string/duration"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <SeekBar
-        android:id="@+id/flashDurationSeekBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashAmountSeekBar"
-        android:layout_alignTop="@+id/flashDurationLabel"
-        android:max="500"
-        android:minWidth="170dp"
-        android:progress="250" />
 
     <Button
         android:id="@+id/colourButton"
@@ -131,8 +109,8 @@
         android:id="@+id/startTimeTextField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/flashDurationSeekBar"
-        android:layout_below="@+id/flashDurationSeekBar"
+        android:layout_alignStart="@+id/flashAmountSeekBar"
+        android:layout_below="@+id/flashAmountSeekBar"
         android:layout_marginTop="20dp"
         android:ems="10"
         android:focusable="false" />
@@ -142,7 +120,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/startTimeTextField"
-        android:layout_alignStart="@+id/flashDurationLabel"
+        android:layout_alignStart="@+id/flashAmountLabel"
         android:layout_alignTop="@+id/startTimeTextField"
         android:gravity="center"
         android:minHeight="32dp"
@@ -173,13 +151,23 @@
         android:focusable="false" />
 
     <CheckBox
-        android:id="@+id/userNotPresentCheckBox"
+        android:id="@+id/priorityModeNone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/noVibrateCheckBox"
         android:layout_below="@+id/noVibrateCheckBox"
         android:checked="true"
-        android:text="@string/user_not_present" />
+        android:text="@string/interruption_none" />
+
+
+    <CheckBox
+        android:id="@+id/priorityModePriority"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/priorityModeNone"
+        android:layout_below="@+id/priorityModeNone"
+        android:checked="true"
+        android:text="@string/interruption_priority" />
 
     <CheckBox
         android:id="@+id/noVibrateCheckBox"

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
@@ -56,7 +57,7 @@ public class MiOverviewActivity extends Activity
 		{
 			super(context);
 
-			setTitle("Select an app");
+			setTitle(getResources().getString(R.string.select_app));
 
 			final ApplicationArrayAdapter arrayAdapter = new ApplicationArrayAdapter(MiOverviewActivity.this, R.layout.list_row_layout, getApps());
 			final ListView listView = new ListView(getContext());
@@ -71,13 +72,38 @@ public class MiOverviewActivity extends Activity
 					Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
 					intent.putExtra("packageName", application.getmPackageName());
 					intent.putExtra("isNew", true);
-					startActivity(intent);
+                    startActivityForResult(intent, Constants.APP_RESULT);
 				}
 			});
 		}
-	}
+	};
 
-	;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mAppArrayAdapter.clear();
+        mAppArrayAdapter.addAll(userPreferences.getAppArray());
+        mAppArrayAdapter.notifyDataSetChanged();
+    }
+
+    private Boolean exit = false;
+    @Override
+    public void onBackPressed() {
+        if (exit) {
+            finish();
+        } else {
+            Toast.makeText(this, getResources().getString(R.string.press_back), Toast.LENGTH_SHORT).show();
+            exit = true;
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    exit = false;
+                }
+            }, 3 * 1000);
+
+        }
+
+    }
 
 	private AddDialog addDialog;
 
@@ -95,8 +121,8 @@ public class MiOverviewActivity extends Activity
 		{
 			new AlertDialog.Builder(MiOverviewActivity.this)
 					.setIcon(android.R.drawable.ic_dialog_alert)
-					.setTitle("Delete?")
-					.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+					.setTitle(getResources().getString(R.string.alert_delete))
+					.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener()
 					{
 						@Override
 						public void onClick(DialogInterface dialog, int which)
@@ -110,7 +136,7 @@ public class MiOverviewActivity extends Activity
 						}
 
 					})
-					.setNegativeButton("No", null)
+					.setNegativeButton(getResources().getString(R.string.no), null)
 					.show();
 
 			return true;

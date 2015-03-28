@@ -22,14 +22,17 @@ import android.widget.Toast;
 import com.lewisjuggins.miband.BLECommunicationManager;
 import com.lewisjuggins.miband.Constants;
 import com.lewisjuggins.miband.MiBandConstants;
+import com.lewisjuggins.miband.NotificationService;
 import com.lewisjuggins.miband.bluetooth.BLEAction;
 import com.lewisjuggins.miband.bluetooth.BLETask;
 import com.lewisjuggins.miband.bluetooth.WaitAction;
 import com.lewisjuggins.miband.bluetooth.WriteAction;
 import com.lewisjuggins.miband.bundle.BundleScrubber;
 import com.lewisjuggins.miband.bundle.PluginBundleManager;
+import com.lewisjuggins.miband.preferences.UserPreferences;
 import com.lewisjuggins.miband.ui.EditActivity;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -59,13 +62,22 @@ public final class FireReceiver extends BroadcastReceiver
             }
 
             final int vibrateTimes = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_VIBRATION);
-            final long vibrateDuration = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_VIBRATION_DURATION);
             final int flashTimes = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH);
-            final long flashDuration =  bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_DURATION);
             final int flashColour = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_COLOR);
-            final int originalColour = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_COLOR);
+            int originalColour = 0;
 
-            notifyBand(vibrateDuration, vibrateTimes, flashTimes, flashColour, originalColour, flashDuration);
+            try
+            {
+                UserPreferences.loadPreferences(context.getApplicationContext().openFileInput(UserPreferences.FILE_NAME));
+                UserPreferences userPreferences = UserPreferences.getInstance();
+                originalColour = userPreferences.getmBandColour();
+            }
+            catch(FileNotFoundException e)
+            {
+                originalColour = bundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH_COLOR);
+            }
+            notifyBand(vibrateTimes, flashTimes, flashColour, originalColour);
+
         }
     }
 
@@ -78,7 +90,7 @@ public final class FireReceiver extends BroadcastReceiver
         return new byte[]{ (byte) red, (byte) green, (byte) blue };
     }
 
-    private void notifyBand(long vibrateDuration, int vibrateTimes, int flashTimes, int flashColour, int originalColour, long flashDuration)
+    private void notifyBand(int vibrateTimes, int flashTimes, int flashColour, int originalColour)
     {
         final List<BLEAction> list = new ArrayList<>();
 
@@ -88,8 +100,6 @@ public final class FireReceiver extends BroadcastReceiver
         for(int i = 1; i <= vibrateTimes; i++)
         {
             list.add(startVibrate);
-            //list.add(new WaitAction(vibrateDuration));
-            //list.add(stopVibrate);
         }
         for(int i = 1; i <= flashTimes; i++)
         {
