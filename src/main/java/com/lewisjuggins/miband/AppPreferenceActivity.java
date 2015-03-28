@@ -52,20 +52,21 @@ public class AppPreferenceActivity extends Activity
 			try
 			{
 				final int vibrations = ((SeekBar) findViewById(R.id.vibrationsSeekBar)).getProgress();
-				final int vibrationDuration = ((SeekBar) findViewById(R.id.vibrationDurationSeekBar)).getProgress();
+				final int vibrationDuration = 0;// ((SeekBar) findViewById(R.id.vibrationDurationSeekBar)).getProgress();
 				final int flashAmount = ((SeekBar) findViewById(R.id.flashAmountSeekBar)).getProgress();
 				final int flashDuration = ((SeekBar) findViewById(R.id.flashDurationSeekBar)).getProgress();
 				final boolean noVibrate = ((CheckBox) findViewById(R.id.noVibrateCheckBox)).isChecked();
-				final boolean userNotPresent = ((CheckBox) findViewById(R.id.userNotPresentCheckBox)).isChecked();
+				final boolean priorityModeNone = ((CheckBox) findViewById(R.id.priorityModeNone)).isChecked();
+                final boolean priorityModePriority = ((CheckBox) findViewById(R.id.priorityModePriority)).isChecked();
 
-				mApplication.loadValues(vibrations, vibrationDuration, flashAmount, flashDuration, noVibrate, userNotPresent, mColour);
+				mApplication.loadValues(vibrations, vibrationDuration, flashAmount, flashDuration, noVibrate, priorityModeNone, priorityModePriority, mColour);
 
 				UserPreferences userPreferences = UserPreferences.getInstance();
 				userPreferences.addOrUpdateAppEntry(mApplication);
 				userPreferences.savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
 
-				Intent intent = new Intent(getApplicationContext(), MiOverviewActivity.class);
-				startActivity(intent);
+                setResult(Constants.APP_RESULT, getIntent());
+                finish();
 			}
 			catch (NumberFormatException | FileNotFoundException e)
 			{
@@ -130,11 +131,11 @@ public class AppPreferenceActivity extends Activity
 			mApplication = UserPreferences.getInstance().getApp(packageName);
 
 			((SeekBar) findViewById(R.id.vibrationsSeekBar)).setProgress(mApplication.getmVibrateTimes());
-			((SeekBar) findViewById(R.id.vibrationDurationSeekBar)).setProgress((int)mApplication.getmVibrateDuration());
 			((SeekBar) findViewById(R.id.flashAmountSeekBar)).setProgress(mApplication.getmBandColourTimes());
 			((SeekBar) findViewById(R.id.flashDurationSeekBar)).setProgress((int)mApplication.getmBandColourDuration());
 			((CheckBox) findViewById(R.id.noVibrateCheckBox)).setChecked(mApplication.ismLightsOnlyOutsideOfPeriod());
-			((CheckBox) findViewById(R.id.userNotPresentCheckBox)).setChecked(mApplication.ismUserPresent());
+			((CheckBox) findViewById(R.id.priorityModeNone)).setChecked(mApplication.ismPriorityModeNone());
+            ((CheckBox) findViewById(R.id.priorityModePriority)).setChecked(mApplication.ismPriorityModePriority());
 		}
 
 		mColour = mApplication.getmBandColour() != 0 ? mApplication.getmBandColour() : mPalette.getVibrantColor(mPalette.getDarkVibrantColor(Color.WHITE));

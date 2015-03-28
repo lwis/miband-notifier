@@ -31,33 +31,11 @@
         android:progress="1" />
 
     <TextView
-        android:id="@+id/vibrationDurationLabelPlugin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/vibrationsLabelPlugin"
-        android:layout_below="@+id/vibrationsLabelPlugin"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:minHeight="32dp"
-        android:text="@string/duration"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <SeekBar
-        android:id="@+id/vibrationDurationSeekBarPlugin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/vibrationsSeekBarPlugin"
-        android:layout_alignTop="@+id/vibrationDurationLabelPlugin"
-        android:max="500"
-        android:minWidth="170dp"
-        android:progress="200" />
-
-    <TextView
         android:id="@+id/flashAmountLabelPlugin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/vibrationDurationLabelPlugin"
-        android:layout_below="@+id/vibrationDurationLabelPlugin"
+        android:layout_alignStart="@+id/vibrationsLabelPlugin"
+        android:layout_below="@+id/vibrationsSeekBarPlugin"
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:minHeight="32dp"
@@ -68,7 +46,7 @@
         android:id="@+id/flashAmountSeekBarPlugin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/vibrationDurationSeekBarPlugin"
+        android:layout_alignStart="@+id/vibrationsSeekBarPlugin"
         android:layout_alignTop="@+id/flashAmountLabelPlugin"
         android:max="4"
         android:minWidth="170dp"

@@ -215,8 +215,6 @@ public class MiBandCommunicationService extends Service
 		for(int i = 1; i <= vibrateTimes; i++)
 		{
 			list.add(startVibrate);
-			//list.add(new WaitAction(vibrateDuration));
-			//list.add(stopVibrate);
 		}
 		for(int i = 1; i <= flashTimes; i++)
 		{

@@ -92,14 +92,12 @@ public class NotificationService extends NotificationListenerService
 		return false;
 	}
 
-	private boolean isAllowedNow(final Date startTime, final Date endTime, final boolean requiresNonInteractive, final boolean lightsOutsidePeriod)
+	private boolean isAllowedNow(final Date startTime, final Date endTime, final boolean priorityModeNone, final boolean priorityModePriority, final boolean lightsOutsidePeriod)
 	{
 		final boolean timeResult = isInPeriod(startTime, endTime) || lightsOutsidePeriod;
-		final boolean rNIResult = !requiresNonInteractive || !((PowerManager) getSystemService(Context.POWER_SERVICE)).isInteractive();
+		final boolean rNIResult = getCurrentInterruptionFilter() == INTERRUPTION_FILTER_ALL || (getCurrentInterruptionFilter() == INTERRUPTION_FILTER_PRIORITY && priorityModePriority) || (getCurrentInterruptionFilter() == INTERRUPTION_FILTER_NONE && priorityModeNone);
 
-		final boolean priorityActive = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getMode() == AudioManager.RINGER_MODE_SILENT;
-
-		Log.i(TAG, Boolean.toString(timeResult && rNIResult));
+        Log.i(TAG, Boolean.toString(timeResult && rNIResult));
 		return timeResult && rNIResult;
 	}
 
@@ -121,8 +119,7 @@ public class NotificationService extends NotificationListenerService
 				final UserPreferences userPreferences = UserPreferences.getInstance();
 				final Application application = userPreferences.getApp(sbn.getPackageName());
 
-				if((application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismUserPresent(),
-						application.ismLightsOnlyOutsideOfPeriod())))
+				if((application != null && isAllowedNow(application.getmStartPeriod(), application.getmEndPeriod(), application.ismPriorityModeNone(), application.ismPriorityModePriority(), application.ismLightsOnlyOutsideOfPeriod())))
 				{
 					Log.d(TAG, "Processing notification.");
 

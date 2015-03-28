@@ -37,9 +37,6 @@ public final class EditActivity extends AbstractPluginActivity {
                 final int vibration = localeBundle.getInt(PluginBundleManager.BUNDLE_EXTRA_VIBRATION);
                 ((SeekBar) findViewById(R.id.vibrationsSeekBarPlugin)).setProgress(vibration);
 
-                final int vibrationDuration = localeBundle.getInt(PluginBundleManager.BUNDLE_EXTRA_VIBRATION_DURATION);
-                ((SeekBar) findViewById(R.id.vibrationDurationSeekBarPlugin)).setProgress(vibrationDuration);
-
                 final int flash = localeBundle.getInt(PluginBundleManager.BUNDLE_EXTRA_FLASH);
                 ((SeekBar) findViewById(R.id.flashAmountSeekBarPlugin)).setProgress(flash);
 
@@ -71,12 +68,11 @@ public final class EditActivity extends AbstractPluginActivity {
         if (!isCanceled())
         {
             final int vibration = ((SeekBar) findViewById(R.id.vibrationsSeekBarPlugin)).getProgress();
-            final int vibrationDuration = ((SeekBar) findViewById(R.id.vibrationDurationSeekBarPlugin)).getProgress();
             final int flash = ((SeekBar) findViewById(R.id.flashAmountSeekBarPlugin)).getProgress();
             final int flashDuration = ((SeekBar) findViewById(R.id.flashDurationSeekBarPlugin)).getProgress();
 
             final Intent resultIntent = new Intent();
-            final Bundle resultBundle = PluginBundleManager.generateBundle(getApplicationContext(),vibration,vibrationDuration, flash, flashDuration, EditActivity.color);
+            final Bundle resultBundle = PluginBundleManager.generateBundle(getApplicationContext(),vibration, flash, flashDuration, EditActivity.color);
             resultIntent.putExtra(com.twofortyfouram.locale.Intent.EXTRA_BUNDLE, resultBundle);
 
             int r = (EditActivity.color >> 16) & 0xFF;
@@ -84,7 +80,6 @@ public final class EditActivity extends AbstractPluginActivity {
             int b = (EditActivity.color >> 0) & 0xFF;
 
             final String blurb = getResources().getText(R.string.vibrations)+": "+vibration+"\n"+
-                    getResources().getText(R.string.duration)+": "+vibrationDuration+"\n"+
                     getResources().getText(R.string.flash)+": "+flash+"\n"+
                     getResources().getText(R.string.duration)+": "+flashDuration+"\n"+
                     getResources().getText(R.string.colour)+": "+String.format("#%02x%02x%02x", r, g, b)+"\n";

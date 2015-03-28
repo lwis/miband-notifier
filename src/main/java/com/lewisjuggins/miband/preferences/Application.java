@@ -27,7 +27,9 @@ public class Application
 
 	private boolean mLightsOnlyOutsideOfPeriod;
 
-	private boolean mUserPresent;
+    private boolean mPriorityModeNone;
+
+	private boolean mPriorityModePriority;
 
 	private transient String mAppName;
 
@@ -54,27 +56,37 @@ public class Application
 		this.mAppName = applicationLabel;
 	}
 
-	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, boolean mLightsOnlyOutsideOfPeriod, boolean mUserPresent, int mBandColour)
+	public void loadValues(int mVibrateTimes, int mVibrateDuration, int mBandColourTimes, int mBandColourDuration, boolean mLightsOnlyOutsideOfPeriod, boolean mPriorityModeNone, boolean mPriorityModePriority, int mBandColour)
 	{
 		this.mVibrateTimes = mVibrateTimes;
 		this.mVibrateDuration = mVibrateDuration;
 		this.mBandColourTimes = mBandColourTimes;
 		this.mBandColourDuration = mBandColourDuration;
 		this.mLightsOnlyOutsideOfPeriod = mLightsOnlyOutsideOfPeriod;
-		this.mUserPresent = mUserPresent;
+        this.mPriorityModeNone = mPriorityModeNone;
+		this.mPriorityModePriority = mPriorityModePriority;
 		this.mBandColour = mBandColour;
 	}
 
-	public boolean ismUserPresent()
+	public boolean ismPriorityModeNone()
 	{
-		return mUserPresent;
+		return mPriorityModeNone;
 	}
 
-	public void setmUserPresent(boolean mUserPresent)
+	public void setmPriorityModeNone(boolean mPriorityModeNone)
 	{
-		this.mUserPresent = mUserPresent;
+		this.mPriorityModeNone = mPriorityModeNone;
 	}
 
+    public boolean ismPriorityModePriority()
+    {
+        return mPriorityModePriority;
+    }
+
+    public void setmPriorityModePriority(boolean mPriorityModePriority)
+    {
+        this.mPriorityModePriority = mPriorityModePriority;
+    }
 	public String getmPackageName()
 	{
 		return mPackageName;
