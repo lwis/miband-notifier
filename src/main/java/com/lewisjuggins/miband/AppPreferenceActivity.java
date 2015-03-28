@@ -52,7 +52,7 @@ public class AppPreferenceActivity extends Activity
 			try
 			{
 				final int vibrations = ((SeekBar) findViewById(R.id.vibrationsSeekBar)).getProgress();
-				final int vibrationDuration = 0;// ((SeekBar) findViewById(R.id.vibrationDurationSeekBar)).getProgress();
+				final int vibrationDuration = 0;
 				final int flashAmount = ((SeekBar) findViewById(R.id.flashAmountSeekBar)).getProgress();
 				final int flashDuration = ((SeekBar) findViewById(R.id.flashDurationSeekBar)).getProgress();
 				final boolean noVibrate = ((CheckBox) findViewById(R.id.noVibrateCheckBox)).isChecked();
