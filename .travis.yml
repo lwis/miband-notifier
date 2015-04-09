@@ -3,8 +3,8 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-21.1.2
-    - android-21
-    - sys-img-armabi-v7a-android-21
-    - sys-img-x86-android-21
+    - build-tools-22.0.0
+    - android-22
+    - sys-img-armabi-v7a-android-22
+    - sys-img-x86-android-22
 script: gradle assembleDebug
