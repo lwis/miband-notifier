@@ -1,4 +1,5 @@
-#Mi Band Notifier [![Build Status](https://travis-ci.org/lwis/miband-notifier.svg?branch=master)](https://travis-ci.org/lwis/miband-notifier)
+#Mi Band Notifier [![Build Status](https://travis-ci.org/lwis/miband-notifier.svg?branch=master)](https://travis-ci.org/lwis/miband-notifier) [![Get it on Google Play](https://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.lewisjuggins.miband)
+
 
 Warning: this app is very much in the development stages.
 
