@@ -3,10 +3,12 @@ apply plugin: 'com.github.ben-manes.versions'
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "22.0.0"
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "com.lewisjuggins.miband"
+        versionCode 1
+        versionName "1.0"
         minSdkVersion 21
         targetSdkVersion 22
     }
@@ -46,8 +48,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.3'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.8'
+        classpath 'com.android.tools.build:gradle:1.3.0-beta1'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.10.1'
     }
 }
 
@@ -62,16 +64,14 @@ dependencies {
             url 'https://oss.sonatype.org/content/repositories/snapshots/'
         }
     }
-    compile('com.google.android.gms:play-services:6.5.+')
-    compile('org.jdeferred:jdeferred-android-aar:1.2.3')
-    compile('com.google.guava:guava:18.0')
+    compile('com.google.android.gms:play-services:7.0.0')
     compile('com.android.support:palette-v7:22.0.+')
     compile('com.google.code.gson:gson:2.3.1')
-    compile('com.melnykov:floatingactionbutton:1.2.0')
+    compile('com.melnykov:floatingactionbutton:1.3.0')
     compile project(":localeapi")
     androidTestCompile('junit:junit:4.12')
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+    gradleVersion = '2.4'
 }
