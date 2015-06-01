@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -82,7 +83,21 @@ public class NotificationService extends NotificationListenerService
 			final DateFormat f = new SimpleDateFormat("HH:mm");
 			final Date now = f.parse(f.format(new Date()));
 			startTime = f.parse(f.format(startTime));
-			endTime = f.parse(f.format(endTime));
+
+			final Calendar endCal = Calendar.getInstance();
+			endCal.setTime(endTime);
+			final boolean midnight = endCal.get(Calendar.HOUR_OF_DAY) == 0 && endCal.get(Calendar.MINUTE) == 0;
+
+			if(midnight)
+			{
+				endCal.add(Calendar.DATE, 1);
+				endTime = f.parse(f.format(endCal.getTime()));
+			}
+			else
+			{
+				endTime = f.parse(f.format(endTime));
+			}
+
 			return ((now.after(startTime) && now.before(endTime)) || now.equals(startTime) || now.equals(endTime));
 		}
 		catch(ParseException e)
@@ -97,7 +112,8 @@ public class NotificationService extends NotificationListenerService
 		final boolean timeResult = isInPeriod(startTime, endTime) || lightsOutsidePeriod;
 		final boolean rNIResult = !requiresNonInteractive || !((PowerManager) getSystemService(Context.POWER_SERVICE)).isInteractive();
 
-		final boolean priorityActive = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getMode() == AudioManager.RINGER_MODE_SILENT;
+		//TODO: Wire this up.
+		//final boolean priorityActive = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getMode() == AudioManager.RINGER_MODE_SILENT;
 
 		Log.i(TAG, Boolean.toString(timeResult && rNIResult));
 		return timeResult && rNIResult;
@@ -162,5 +178,3 @@ public class NotificationService extends NotificationListenerService
 		}
 	}
 }
-
-
