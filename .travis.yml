@@ -17,4 +17,4 @@ before_install:
     - sudo /etc/init.d/postgresql stop
 install:
     - chmod +x ./gradlew; ls -l gradlew; ./gradlew wrapper -v
-script: ./gradle assembleDebug
+script: ./gradlew assembleDebug
