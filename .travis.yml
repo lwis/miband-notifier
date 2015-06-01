@@ -1,4 +1,7 @@
 language: android
+jdk:
+    - oraclejdk7
+    - openjdk7
 android:
   components:
     - platform-tools
@@ -8,6 +11,10 @@ android:
     - extra-google-google_play_services
     - extra-google-m2repository
     - extra-android-m2repository
-    - sys-img-armabi-v7a-android-22
-    - sys-img-x86-android-22
-script: gradle assembleDebug
+    - extra-android-support
+before_install:
+    - sudo /etc/init.d/mysql stop
+    - sudo /etc/init.d/postgresql stop
+install:
+    - chmod +x ./gradlew; ls -l gradlew; ./gradlew wrapper -v
+script: ./gradle assembleDebug
