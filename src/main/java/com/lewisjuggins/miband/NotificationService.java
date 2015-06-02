@@ -90,8 +90,9 @@ public class NotificationService extends NotificationListenerService
 
 			if(midnight)
 			{
+				endCal.setTime(f.parse(f.format(endCal.getTime())));
 				endCal.add(Calendar.DATE, 1);
-				endTime = f.parse(f.format(endCal.getTime()));
+				endTime = endCal.getTime();
 			}
 			else
 			{
