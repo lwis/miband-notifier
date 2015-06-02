@@ -56,11 +56,7 @@ public final class InfoActivity extends Activity
 
             try
             {
-                startActivity(new Intent(
-                                         Intent.ACTION_VIEW,
-                                         Uri.parse(String.format(Locale.US,
-                                                 APP_STORE_URI,
-                                                 "com.twofortyfouram.locale", getPackageName()))).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)); //$NON-NLS-1$
+                //startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(String.format(Locale.US, APP_STORE_URI, "com.twofortyfouram.locale", getPackageName()))).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)); //$NON-NLS-1$
             }
             catch (final Exception e)
             {

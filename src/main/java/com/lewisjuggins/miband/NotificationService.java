@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.service.notification.NotificationListenerService;
@@ -111,7 +111,12 @@ public class NotificationService extends NotificationListenerService
 	private boolean isAllowedNow(final Date startTime, final Date endTime, final boolean requiresNonInteractive, final boolean lightsOutsidePeriod)
 	{
 		final boolean timeResult = isInPeriod(startTime, endTime) || lightsOutsidePeriod;
-		final boolean rNIResult = !requiresNonInteractive || !((PowerManager) getSystemService(Context.POWER_SERVICE)).isInteractive();
+		boolean rNIResult = false;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+		{
+			rNIResult = !requiresNonInteractive || !((PowerManager) getSystemService(Context.POWER_SERVICE)).isInteractive();
+		}
 
 		//TODO: Wire this up.
 		//final boolean priorityActive = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getMode() == AudioManager.RINGER_MODE_SILENT;
@@ -123,8 +128,6 @@ public class NotificationService extends NotificationListenerService
 	@Override
 	public void onNotificationPosted(StatusBarNotification sbn)
 	{
-		super.onNotificationPosted(sbn);
-
 		final LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
 
 		final PowerManager.WakeLock wl = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationService");
@@ -178,4 +181,10 @@ public class NotificationService extends NotificationListenerService
 			}
 		}
 	}
+
+	@Override public void onNotificationRemoved(final StatusBarNotification sbn)
+	{
+
+	}
+
 }
