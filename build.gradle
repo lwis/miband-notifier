@@ -9,7 +9,7 @@ android {
         applicationId "com.lewisjuggins.miband"
         versionCode 1
         versionName "1.0"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 22
     }
 
