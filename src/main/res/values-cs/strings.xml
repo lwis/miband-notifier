@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MiBand Notifier</string>
+    <string name="looking_for_miband">Vyhledávání MiBand</string>
+    <string name="vibrations">Vibrace</string>
+    <string name="duration">Trvání</string>
+    <string name="flash">Blikání</string>
+    <string name="colour">Barva</string>
+    <string name="start">Začátek</string>
+    <string name="end">Konec</string>
+    <string name="user_not_present">Bez interakce</string>
+    <string name="no_vibrate_outside_of_period">Jen blikat mimo této doby</string>
+    <string name="done">Hotovo</string>
+    <string name="temp_text">Název apl.</string>
+    <string name="action_settings">Nastavení</string>
+    <string name="test_band_vibrate">Test vibrací</string>
+    <string name="set_band_colour">Barva LED</string>
+    <string name="set_MAC_address">MAC adresa MiBand</string>
+    <string name="set_MAC_address_ok">MAC adresa je nastavena</string>
+    <string name="set_MAC_address_error">Nesprávná MAC adresa</string>
+    <string name="set_MAC_address_removed">MAC adresa odstraněna</string>
+    <string name="alert_MAC_address">MiBand není připojen nebo je nutné zadat MAC adresu manuálně</string>
+</resources>
