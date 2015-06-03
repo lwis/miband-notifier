@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mi Band Notifier</string>
+    <string name="looking_for_miband">Suche nach Mi Band</string>
+    <string name="vibrations">Vibrationen</string>
+    <string name="duration">Dauer</string>
+    <string name="flash">Blinken</string>
+    <string name="colour">Farbe</string>
+    <string name="start">Start</string>
+    <string name="end">Ende</string>
+    <string name="user_not_present">Nicht interaktiv</string>
+    <string name="no_vibrate_outside_of_period">Außerhalb des Zeitfensters leuchten</string>
+    <string name="done">Fertig</string>
+    <string name="temp_text">App Name</string>
+    <string name="action_settings">Einstellungen</string>
+    <string name="test_band_vibrate">Band-Vibrationen testen</string>
+    <string name="set_band_colour">LED-Farbe einstellen</string>
+    <string name="set_MAC_address">Mi Band MAC-Adresse setzen</string>
+    <string name="set_MAC_address_ok">MAC-Adresse wurde korrekt gesetzt</string>
+    <string name="set_MAC_address_error">Ungültige MAC-Adresse</string>
+    <string name="set_MAC_address_removed">MAC-Adresse entfernt</string>
+    <string name="alert_MAC_address">Das Mi Band ist nicht verbunden oder die Eingabe einer MAC-Adresse ist notwendig</string>
+</resources>
