@@ -7,9 +7,9 @@ android {
 
     defaultConfig {
         applicationId "com.lewisjuggins.miband"
-        versionCode 1
-        versionName "1.0"
-        minSdkVersion 19
+        versionCode 3
+        versionName "1.2"
+        minSdkVersion 21
         targetSdkVersion 22
     }
 
@@ -48,7 +48,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.3.0-beta1'
+        classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.10.1'
     }
 }
@@ -73,5 +73,5 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.4'
+    gradleVersion = '2.5'
 }
