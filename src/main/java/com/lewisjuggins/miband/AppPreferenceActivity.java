@@ -64,8 +64,9 @@ public class AppPreferenceActivity extends Activity
 				userPreferences.addOrUpdateAppEntry(mApplication);
 				userPreferences.savePreferences(openFileOutput(UserPreferences.FILE_NAME, Context.MODE_PRIVATE));
 
-				Intent intent = new Intent(getApplicationContext(), MiOverviewActivity.class);
-				startActivity(intent);
+				Intent intent = new Intent();
+				setResult(RESULT_OK, intent);
+				finish();
 			}
 			catch (NumberFormatException | FileNotFoundException e)
 			{

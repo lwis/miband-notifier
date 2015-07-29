@@ -43,6 +43,8 @@ import java.util.regex.Pattern;
 public class MiOverviewActivity extends Activity
 {
 	private final String TAG = this.getClass().getSimpleName();
+	private final int APP_ADD = 0;
+	private final int APP_EDIT = 1;
 
 	private UserPreferences userPreferences;
 
@@ -71,13 +73,11 @@ public class MiOverviewActivity extends Activity
 					Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
 					intent.putExtra("packageName", application.getmPackageName());
 					intent.putExtra("isNew", true);
-					startActivity(intent);
+					startActivityForResult(intent, APP_ADD);
 				}
 			});
 		}
 	}
-
-	;
 
 	private AddDialog addDialog;
 
@@ -126,7 +126,7 @@ public class MiOverviewActivity extends Activity
 
 			Intent intent = new Intent(getApplicationContext(), AppPreferenceActivity.class);
 			intent.putExtra("packageName", packageName);
-			startActivity(intent);
+			startActivityForResult(intent, APP_EDIT);
 		}
 	};
 
@@ -281,6 +281,18 @@ public class MiOverviewActivity extends Activity
             }
         }
     }
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if(resultCode == RESULT_OK && requestCode == APP_ADD)	{ //App added/clicked on done
+			mAppArrayAdapter.clear();
+			mAppArrayAdapter.addAll(userPreferences.getAppArray());
+			mAppArrayAdapter.notifyDataSetChanged();
+		}
+
+	}
 
     @Override
 	public void onResume()
